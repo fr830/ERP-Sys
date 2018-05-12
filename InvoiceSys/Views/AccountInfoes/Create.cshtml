@@ -1,0 +1,184 @@
+﻿@model MrAng_Invoice.Models.AccountInfo
+
+@{
+    ViewBag.Title = "Create";
+}
+
+<h2>Create User</h2>
+
+
+@using (Html.BeginForm(null, null, FormMethod.Post, new { id = "createAccount" })) 
+{
+    @Html.AntiForgeryToken()
+    
+    <div class="form-horizontal">
+        <h4>Account Creation</h4>
+        <hr />
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="form-group">
+            @Html.LabelFor(model => model.user_full_name, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.user_full_name, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.user_full_name, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.user_contact_no, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.user_contact_no, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.user_contact_no, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.email, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.email, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.email, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.username, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.username, new { htmlAttributes = new { @class = "form-control",@onchange= "checkUsername(this)" } })
+                <p id="ErrorMessage" style="color:red"></p>
+                @Html.ValidationMessageFor(model => model.username, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.password, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.PasswordFor(model => model.password, new {  @class = "form-control"  })
+                @Html.ValidationMessageFor(model => model.password, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="control-label col-md-2">
+                <b>Confirm Password:</b>
+            </div>
+            <div class="col-md-10">
+               <input class="form-control" type="password" id="confirmPassword" required />
+            </div>
+        </div>
+
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.company_name, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                <input list="companyNameList" name="company_name" id="company_name" class="form-control" >
+                <datalist id="companyNameList">
+                    @{
+                        for (int i = 0; i < ViewBag.companyName.Count; i++)
+                        {
+                            <option value="@ViewBag.companyName[i]">@ViewBag.companyName[i]</option>
+                        }
+
+                    }
+                    </datalist>
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.account_role, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                <select name="account_role" id="account_role" class="form-control">
+                    @for (int i = 0; i < ViewBag.account_role.Count; i++)
+                    {
+                            <option value="@ViewBag.account_role[i]">@ViewBag.account_role[i]</option>
+                    }
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.user_type, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                <select name="user_type" id="user_type" class="form-control">
+
+                        @for (int i = 0; i < ViewBag.userType.Count; i++)
+                        {
+                            <option value="@ViewBag.userType[i].user_type">@ViewBag.userType[i].user_type</option>
+                        }
+                    </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.remarks, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.TextAreaFor(model => model.remarks, 10, 40, new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.remarks, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <!--For Leave Application Purposes-->
+        <div class="form-group" style="display:none">
+            <label class = "control-label col-md-2" >Annual Leave Balance:</label>
+            <div class="col-md-10">
+                <input class="form-control" type="hidden" value="0" id="annual_leave_bal" name="annual_leave_bal" />
+            </div>
+        </div>
+
+        <div class="form-group" style="display:none">
+            <label class="control-label col-md-2">Medical Leave Balance:</label>
+            <div class="col-md-10">
+                <input class="form-control" type="hidden" value="0" id="medical_leave_bal" name="medical_leave_bal" />
+            </div>
+        </div>
+
+
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <button type="button" id="submitForm" name="submitForm" class="btn btn-default" onclick="validatePassword()">Create</button> 
+            </div>
+        </div>
+    </div>
+}
+
+<div>
+    @Html.ActionLink("Back to List", "Index")
+</div>
+<script>
+    var submitForm = document.getElementById("submitForm");
+    function validatePassword() {
+        var password = document.getElementById("password").value;
+        var confirmPassword = document.getElementById("confirmPassword").value;
+        if (password == confirmPassword) {
+            document.getElementById("createAccount").submit();
+        } else {
+            alert("Password and Confirm Password does not match!");
+        }
+    }
+
+    function checkUsername(username) {
+        var xmlhttp;
+        //To check whether browser support which type of AJAX
+        if (window.XMLHttpRequest) {
+            xmlhttp = new XMLHttpRequest();
+        } else { //Code for older browser
+            xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+        }
+
+        xmlhttp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                if (this.responseText == "true") {
+                    document.getElementById("ErrorMessage").innerText = "Username has been used!"
+                    submitForm.disabled = true;
+                } else {
+                    document.getElementById("ErrorMessage").innerText = ""
+                    submitForm.disabled = false;
+                }
+                
+            }
+        };
+        xmlhttp.open("GET", "\CheckUsername?username=" + username.value, true);
+        xmlhttp.send();
+    }
+</script>
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}

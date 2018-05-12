@@ -1,0 +1,201 @@
+﻿@model MrAng_Invoice.Models.Customer_PrivateInfo
+
+@{
+    ViewBag.Title = "Delete";
+}
+
+<h2>Delete</h2>
+
+<h3>Are you sure you want to delete this?</h3>
+<div>
+    <h4>Deleting @Model.company_name Information</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.company_name)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.company_name)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.company_reg_no)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.company_reg_no)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.payment_term)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.payment_term)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.company_gst_no)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.company_gst_no)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.company_address)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.company_address)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.company_fax_no)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.company_fax_no)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.company_tel_no)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.company_tel_no)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.company_person_incharge1)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.company_person_incharge1)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.company_department1)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.company_department1)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.company_position1)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.company_position1)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.company_email1)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.company_email1)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.company_tel_no1)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.company_tel_no1)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.company_person_incharge2)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.company_person_incharge2)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.company_department2)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.company_department2)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.company_position2)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.company_position2)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.company_email2)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.company_email2)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.company_tel_no2)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.company_tel_no2)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.company_person_incharge3)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.company_person_incharge3)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.company_department3)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.company_department3)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.company_position3)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.company_position3)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.company_email3)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.company_email3)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.company_tel_no3)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.company_tel_no3)
+        </dd>
+
+
+    </dl>
+
+    @using (Html.BeginForm()) {
+        @Html.AntiForgeryToken()
+
+        <div class="form-actions no-color">
+            <input type="submit" value="Delete" class="btn btn-default" /> |
+            @Html.ActionLink("Back to List", "Index")
+        </div>
+    }
+</div>

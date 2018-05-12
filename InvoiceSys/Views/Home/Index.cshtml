@@ -1,0 +1,11 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+}
+
+<div class="jumbotron">
+    <h1>@Session["company_name"].ToString()</h1>
+    <p class="lead">Welcome @Session["name"].ToString()</p>
+    <!--Html.ActionLink("Click Here for User Manual", "DownloadUserManual", new { })-->
+
+</div>
+

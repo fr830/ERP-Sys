@@ -1,0 +1,170 @@
+﻿@model IEnumerable<MrAng_Invoice.Models.Quotation_Details>
+
+@{
+    ViewBag.Title = "ImportQuotation_PopUp";
+    Layout = "";
+}
+@RenderPage("../HeaderFile.cshtml")
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title - My ASP.NET Application</title>
+
+    @Styles.Render("~/Content/css")
+    @Scripts.Render("~/bundles/modernizr")
+    @Styles.Render("~/Content/fontawesome/font-awesome.css")
+    @Styles.Render("~/Content/fontawesome/font-awesome.min.css")
+</head>
+<body>
+    <div class="container body-content">
+        @using (Html.BeginForm("ImportQuotation_PopUp", "Invoice_Details", FormMethod.Post))
+        {
+            <label>Quotation No:</label>
+            <input list="quotationNo" name="quotationNoSearch" id="quotationNoSearch">
+            <datalist id="quotationNo">
+                @for (int i = 0; i < ViewBag.quotaionNo.Count; i++)
+                {
+                    <option value="@ViewBag.quotaionNo[i]">@ViewBag.quotaionNo[i]</option>
+                }
+            </datalist>
+            <label>Company Name:</label>
+            <input list="companyNameList" name="companyName" id="companyName">
+            <datalist id="companyNameList">
+                @for (int i = 0; i < ViewBag.companyName.Count; i++)
+                {
+                    <option value="@ViewBag.companyName[i]">@ViewBag.companyName[i]</option>
+                }
+            </datalist>
+            <label>Created Date</label>
+            <input type="text" id="createdDate" name="createdDate" placeholder="yyyy/mm/dd" />
+            <input type="submit" value="Filter" />
+        }
+        <br />
+        <p style="color:red">Only Quotation with status = "PO Issued" and approval status = "Approve" will be listed here</p>
+        <h2>Quotation Search: </h2>
+        <table class="table">
+            <tr>
+                <th>
+                    <input type="checkbox" name="select-all" id="select-all" />
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.quotation_no)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.company_name)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.created_by)
+                </th>
+                <th>
+                    Action
+                </th>
+            </tr>
+
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        <input type="checkbox" id="quo_id" name="quo_id" value="@item.quotation_no">
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.quotation_no)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.company_name)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.created_by)
+                    </td>
+                    <td>
+                        @if (PermissionChecker.CheckUserPermission(Session["permission"].ToString(), "create", "7"))
+                        {
+                            <button class="btn btn-primary" onclick="ImportQuotation('@item.quotation_no','@item.created_date.ToString("dd-MMMM-yyyy")')">Import</button>
+                        }
+                        |
+                        @if (PermissionChecker.CheckUserPermission(Session["permission"].ToString(), "view", "7"))
+                        {
+                            <input type="button" value="Details" onclick="location.href='@Url.Action("Details", "Quotation_Details", new { id = item.quotation_id, needLayout = "No" })'" class="btn btn-primary" />
+                        }
+                    </td>
+                </tr>
+            }
+
+        </table>
+    </div>
+    <div class="col-md-12 text-center">
+        <button class="btn btn-primary" onclick="importSelected()">Import Selected</button>
+    </div>
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+
+</body>
+</html>
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}
+<script>
+    function ImportQuotation(quotation_no, created_date) {
+        window.opener.location.href = "/Invoice_Details/ImportQuotation?quotationNo=" + quotation_no + " &created_date=" + created_date;
+        window.close();
+    }
+
+    $(document).ready(function () {
+
+        $("#createdDate").datepicker({
+            "dateFormat": "yy-mm-dd",
+            changeMonth: true,
+            changeYear: true,
+            numberOfMonths: 1
+        });
+
+    });
+
+    $('#select-all').click(function (event) {
+        if (this.checked) {
+            // Iterate each checkbox
+            radio_btn = $('input[name=quo_id]');
+            for (var i = 0, n = radio_btn.length; i < n; i++) {
+                radio_btn[i].checked = true;
+            }
+        } else {
+            radio_btn = $('input[name=quo_id]');
+            for (var i = 0, n = radio_btn.length; i < n; i++) {
+                radio_btn[i].checked = false;
+            }
+        }
+    });
+
+    function importSelected() {
+        radio_btn = $('input[name=quo_id]');
+        var dtl_id = [];
+        for (var i = 0; i < radio_btn.length; i++) {
+            if (radio_btn[i].checked && radio_btn[i].type == "checkbox") {
+                dtl_id.push(radio_btn[i].value);
+            }
+        }
+        if (dtl_id.length > 0) {
+            var xmlhttp;
+            //To check whether browser support which type of AJAX
+            if (window.XMLHttpRequest) {
+                xmlhttp = new XMLHttpRequest();
+            } else { //Code for older browser
+                xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+            }
+
+            xmlhttp.onreadystatechange = function () {
+                if (this.readyState == 4 && this.status == 200) {
+                    alert("Sucessfuly imported " + dtl_id.length + " quotation");
+                    window.close();
+                }
+            };
+            xmlhttp.open("GET", "/Invoice_Details/multipleQuotationImport?quotation_no=" + dtl_id.toString(), true);
+            xmlhttp.send();
+
+        } else {
+            alert("Please select at least 1 quotation to import!");
+        }
+
+    }
+</script>

@@ -1,0 +1,113 @@
+﻿@model IEnumerable<MrAng_Invoice.Models.Customer_PrivateInfo>
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Customer Management</h2>
+
+<p>
+    @{
+
+        if (PermissionChecker.CheckUserPermission(Session["permission"].ToString(), "create", "1"))
+        {
+            @Html.ActionLink("Create New Customer", "Create")
+        }
+
+    }
+    
+
+    @using (Html.BeginForm("Index", "Customer_PrivateInfo", FormMethod.Post))
+    {
+    <p>
+        Company ID: 
+        <input list="companyIDList" name="customerID" id="customerID">
+        <datalist id="companyIDList">
+            @{
+                for (int i = 0; i < ViewBag.companyID.Count; i++)
+                {
+                    <option value="@ViewBag.companyID[i]">@ViewBag.companyID[i]</option>
+                }
+
+            }
+
+        </datalist>
+        Company Name:
+        <input list="companyNameList" name="companyName" id="companyName">
+        <datalist id="companyNameList">
+            @{
+                for (int i = 0; i < ViewBag.companyName.Count; i++)
+                {
+                    <option value="@ViewBag.companyName[i]">@ViewBag.companyName[i]</option>
+                }
+
+            }
+
+        </datalist>
+        <input type="submit" value="Filter" />
+    </p>
+                }
+</p>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.customer_id)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.company_name)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.company_person_incharge1)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.company_email1)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.company_tel_no1)
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model)
+{
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.customer_id)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.company_name)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.company_person_incharge1)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.company_email1)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.company_tel_no1)
+        </td>
+        <td>
+            @{
+                if (PermissionChecker.CheckUserPermission(Session["permission"].ToString(), "view", "1"))
+                {
+                @Html.ActionLink("View Report", "customerReport", new { id = item.id , genReport = false, isChargeable=false}) @:|
+                }
+                if (PermissionChecker.CheckUserPermission(Session["permission"].ToString(), "edit", "1"))
+                {
+                    @Html.ActionLink("Edit", "Edit", new { id = item.id }) @:|
+                }
+                if (PermissionChecker.CheckUserPermission(Session["permission"].ToString(), "view", "1"))
+                {
+
+                    @Html.ActionLink("Details", "Details", new { id = item.id }) @:|
+                }
+                if (PermissionChecker.CheckUserPermission(Session["permission"].ToString(), "delete", "1"))
+                {
+                @Html.ActionLink("Delete", "Delete", new { id = item.id })}
+                }
+
+        </td>
+    </tr>
+}
+
+</table>

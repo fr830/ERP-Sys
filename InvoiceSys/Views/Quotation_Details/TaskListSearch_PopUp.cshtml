@@ -1,0 +1,146 @@
+﻿@model IEnumerable<MrAng_Invoice.Models.Customer_WorkSheet>
+
+@{
+    ViewBag.Title = "CustomerSearch_PopUp";
+    Layout = "";
+    var id = 0;
+}
+@RenderPage("../HeaderFile.cshtml")
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title - My ASP.NET Application</title>
+
+    @Styles.Render("~/Content/css")
+    @Scripts.Render("~/bundles/modernizr")
+    @Styles.Render("~/Content/fontawesome/font-awesome.css")
+    @Styles.Render("~/Content/fontawesome/font-awesome.min.css")
+</head>
+<body>
+    <div class="container body-content">
+        @using (Html.BeginForm("TaskListSearch_PopUp", "Quotation_Details", FormMethod.Post))
+        {
+            <label>Ticket ID:</label>
+            <input list="ticketID" name="ticketIdSearch" id="ticketIdSearch">
+            <datalist id="ticketID">
+                @for (int i = 0; i < ViewBag.ticketID.Count; i++)
+                {
+                    <option value="@ViewBag.ticketID[i]">@ViewBag.ticketID[i]</option>
+                }
+            </datalist>
+            <label>Client Served:</label>
+            <input list="customerList" name="client_served" id="client_served">
+            <datalist id="customerList">
+                @for (int i = 0; i < ViewBag.customerList.Count; i++)
+                {
+                    <option value="@ViewBag.customerList[i]">@ViewBag.customerList[i]</option>
+                }
+            </datalist>
+            <label>Date:</label>
+            <input type="text" id="date" name="date" />
+            <input type="submit" value="Filter" />
+        }
+        <h2>Task List Search: </h2>
+        <table class="table">
+            <tr>
+                <th>
+                    @Html.DisplayNameFor(model => model.ticket_id)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.followup_by)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.client_served)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.job_location)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.job_description)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.total_working_hour)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.working_date)
+                </th>
+                <th>
+                    Action
+                </th>
+            </tr>
+
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td id="task_ticket_@id">
+                        @Html.DisplayFor(modelItem => item.ticket_id)
+                    </td>
+                    <td id="task_follow_up_@id">
+                        @Html.DisplayFor(modelItem => item.followup_by)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.client_served)
+                    </td>
+                    <td id="task_location_@id">
+                        @Html.DisplayFor(modelItem => item.job_location)
+                    </td>
+                    <td id="task_description_@id">
+                        @Html.DisplayFor(modelItem => item.job_description)
+                    </td>
+                    <td id="task_working_hour_@id">
+                        @Html.DisplayFor(modelItem => item.total_working_hour)
+                    </td>
+                    <td id="task_working_date_@id">
+                        @Html.DisplayFor(modelItem => item.working_date)
+                    </td>
+                    <td>
+                        <button type="button" onclick="selectTask(@id,'@ViewBag.user_type')" class="btn btn-primary">Submit</button> | 
+                        <input type="button" value="Details" onclick="location.href='@Url.Action("Details", "Customer_WorkSheet", new { id = item.customer_worksheet_ID, needLayout = "No" })'" class="btn btn-primary"/>
+                    </td>
+                </tr>
+                id++;
+            }
+
+        </table>
+    </div>
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+
+</body>
+</html>
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}
+<script>
+    function selectTask(id,user_type) {
+        var ticket_id = document.getElementById("task_ticket_" + id).innerText;
+        var follow_up = document.getElementById("task_follow_up_" + id).innerText;
+        var task_location = document.getElementById("task_location_" + id).innerText;
+        var task_description = document.getElementById("task_description_" + id).innerText;
+        var working_hour = document.getElementById("task_working_hour_" + id).innerText;
+        var working_date = document.getElementById("task_working_date_" + id).innerText;
+
+        var job_description = "Task: " + task_description + "\rLocation: " + task_location + "\rWorking Date: " + working_date + "\rTotal Working Hour: " + working_hour + "\rTicket ID:" + ticket_id + "\rFollow Up By: " + follow_up;
+
+        var parent_wrapper = window.opener.document.getElementById("item_wrapper");
+
+        if (user_type == "Admin") {
+            $(parent_wrapper).append('<div class="row"><br><div class="col-md-1"><input type="text" class="form-control" id="item_no" name="item_no"/></div><div class="col-md-3"><input id="item_description" name="item_description" type="text" value="Labor Cost" class="form-control" style="max-width:400px" /><textarea id="item_elaboration" name="item_elaboration" rows="10" cols="40" class="form-control" style="margin-top:5px;max-width:400px" maxlength="5000" >' + job_description + '</textarea></div><div class="col-md-1"> <input id="item_qty" name="item_qty" type="number" class="form-control" /></div><div class="col-md-2"><input id="item_price" name="item_price" type="number" step=".01" class="form-control" /></div><div class="col-md-1"><input type="text" id="tax_code" name="tax_code" class="form-control"></div><div class="col-md-2"><input type="number" maxlength="5" id="item_cost" name="item_cost"  step=".01" class="form-control"></div><div class="col-md-2" style=""><input type="text" maxlength="100" id="item_supplier" name="item_supplier" class="form-control"></div><a href="#" style="float:right" class="remove_field">Remove</a></div>');
+        }else {
+            $(parent_wrapper).append('<div class="row"><br><div class="col-md-1"><input type="text" class="form-control" id="item_no" name="item_no"/></div><div class="col-md-3"><input id="item_description" name="item_description" type="text" value="Labor Cost" class="form-control" style="max-width:400px" /><textarea id="item_elaboration" name="item_elaboration" rows="10" cols="40" class="form-control" style="margin-top:5px;max-width:400px" maxlength="5000" >' + job_description + '</textarea></div><div class="col-md-1"> <input id="item_qty" name="item_qty" type="number" class="form-control" /></div><div class="col-md-2"><input id="item_price" name="item_price" type="number" step=".01" class="form-control" /></div><div class="col-md-1"><input type="text" id="tax_code" name="tax_code" class="form-control"></div><a href="#" class="remove_field">Remove</a><div class="col-md-4"></div></div>');
+        }
+  
+        window.close();
+    }
+
+    $(document).ready(function () {
+        $("#date").datepicker({
+            "dateFormat": "yy-mm-dd",
+            changeMonth: true,
+            changeYear: true,
+            numberOfMonths: 1
+        });
+
+    });
+</script>

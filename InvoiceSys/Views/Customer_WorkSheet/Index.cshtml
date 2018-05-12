@@ -1,0 +1,141 @@
+﻿@model IEnumerable<MrAng_Invoice.Models.Customer_WorkSheet>
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Customer Worksheet</h2>
+<style>
+    .ui-datepicker-calendar {
+        display: none;
+    }
+</style>
+<p>
+    <!--Html.ActionLink("Create New", "Create")-->
+    @using (Html.BeginForm("Index", "Customer_WorkSheet", FormMethod.Post))
+    {
+    <p>
+
+
+        @if (PermissionChecker.isSuperAdmin(Session["permission"].ToString()))
+        {
+            @:Company Name:
+            <input list="company" name="customerSearch" id="customerSearch">
+            <datalist id="company">
+                @{
+                    for (int i = 0; i < ViewBag.company.Count; i++)
+                    {
+                        <option value="@ViewBag.company[i]">@ViewBag.company[i]</option>
+                    }
+
+                }
+            </datalist>
+                    }
+        
+        Status: <select id="status" name="status">
+            <option value="All">All</option>
+            <option>Approve</option>
+            <option>Reject</option>
+            <option>Pending</option>
+        </select>
+
+       Working Date: <input type="text"  name="working_date" id="working_date" readonly />
+        <input type="submit" value="Filter" />
+    </p>
+                }
+</p>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.ticket_id)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.employee_ID)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.time_in)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.time_out)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.total_working_hour)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.client_served)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.submission_date)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.approval_status)
+        </th>
+       
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.ticket_id)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.employee_ID)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.time_in)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.time_out)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.total_working_hour)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.client_served)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.submission_date)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.approval_status)
+        </td>
+        <td>
+            @if (PermissionChecker.CheckUserPermission(Session["permission"].ToString(), "view", "3"))
+            {
+            @Html.ActionLink("Details", "Details", new { id = item.customer_worksheet_ID }) 
+            }
+            @if (item.approval_status != "Approve")
+            {
+                @:|
+                if (PermissionChecker.CheckUserPermission(Session["permission"].ToString(), "edit", "3"))
+                {
+                    @Html.ActionLink("Edit", "Edit", new { id = item.customer_worksheet_ID }) @:|
+                }
+                if (PermissionChecker.CheckUserPermission(Session["permission"].ToString(), "approve", "3"))
+                {
+                    @Html.ActionLink("Approve", "ApproveWorkSheet", new { id = item.customer_worksheet_ID }) @:|
+                    @Html.ActionLink("Reject", "RejectWorkSheet", new { id = item.customer_worksheet_ID })
+                }
+            }
+        </td>
+    </tr>
+}
+
+</table>
+<script>
+    $(document).ready(function () {
+
+        $("#working_date").datepicker({
+            "dateFormat": "mm yy",
+            changeMonth: true,
+            changeYear: true,
+            numberOfMonths: 1, onClose: function () {
+                var iMonth = $("#ui-datepicker-div .ui-datepicker-month :selected").val();
+                var iYear = $("#ui-datepicker-div .ui-datepicker-year :selected").val();
+                $(this).datepicker('setDate', new Date(iYear, iMonth, 1));
+            },
+        });
+    });
+</script>

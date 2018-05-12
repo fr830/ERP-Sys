@@ -1,0 +1,106 @@
+﻿@model MrAng_Invoice.Models.Employee_WorkSheet
+
+@{
+    ViewBag.Title = "Delete";
+}
+
+<h2>Delete</h2>
+
+<h3>Are you sure you want to delete this?</h3>
+<div>
+    <h4>Deleting @Model.ticket_ID</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.ticket_ID)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.ticket_ID)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.employee_ID)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.employee_ID)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.working_date)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.working_date)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.time_in)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.time_in)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.time_out)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.time_out)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.total_working_hour)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.total_working_hour)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.client_served)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.client_served)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.submission_date)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.submission_date)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.approval_date)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.approval_date)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.approval_status)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.approval_status)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.remarks)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.remarks)
+        </dd>
+    </dl>
+
+    @using (Html.BeginForm()) {
+        @Html.AntiForgeryToken()
+
+        <div class="form-actions no-color">
+            <input type="submit" value="Delete" class="btn btn-default" /> |
+            @Html.ActionLink("Back to List", "Index")
+        </div>
+    }
+</div>

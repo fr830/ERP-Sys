@@ -1,0 +1,468 @@
+﻿@model MrAng_Invoice.Models.Customer_PrivateInfo
+
+@{
+    ViewBag.Title = "Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var counter = 0;
+    int ttlBeforeWorkingHr = 0, ttlWorkingHr = 0, ttlAfterWorkingHr = 0;
+    int ttlBDBeforeWorkingHr = 0, ttlBDWorkingHr = 0, ttlBDAfterWorkingHr = 0;
+    int ttlNBDBeforeWorkingHr = 0, ttlNBDWorkingHr = 0, ttlNBDAfterWorkingHr = 0;
+
+}
+
+<style>
+    table > thead > tr > th {
+        text-align: center;
+    }
+
+    table > tbody > tr > td {
+        text-align: center;
+    }
+
+    .ui-datepicker-calendar {
+        display: none;
+    }
+</style>
+<h2><u>Customer Summary Worksheet</u></h2>
+@using (Html.BeginForm())
+{
+    <input type="hidden" name="genReport" id="genReport" value="true" />
+    @Html.HiddenFor(model => model.id);
+    <div class="row">
+        <div class="col-md-2">
+            <h4><b>Company Name:</b></h4>
+        </div>
+        <div class="col-md-3">
+            <h4>@Model.company_name</h4>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-2">
+            <h4><b>Company ID:</b></h4>
+        </div>
+        <div class="col-md-2">
+            <h4>@Model.customer_id</h4>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-2">
+            <h4><b>Month:</b></h4>
+        </div>
+        <div class="col-md-2">
+            <input type="text" style="margin-top:10px" id="dateOfReport" name="dateOfReport" class="form-control" value="@ViewBag.dateOfReport" readonly />
+        </div>
+        <div class="col-md-2">
+            <input type="submit" value="Submit" class="btn btn-default" style="margin-top:10px" />
+        </div>
+        <div class="col-md-4">
+            <label>Show only Chargeable Worksheet</label>
+            @if (ViewBag.isChargeable)
+            {
+                <input type="checkbox" id="isChargeable" name="isChargeable" style="margin:20px 0px 0px 7px" value="true" checked />
+            }
+            else
+            {
+                <input type="checkbox" id="isChargeable" name="isChargeable" style="margin:20px 0px 0px 7px" value="true" />
+            }
+        </div>
+    </div>
+    <br />
+    <p style="color:red">Remarks: By ticking "Show only Chargeable Worksheet", report will only show chargeable worksheet</p>
+}
+
+<br />
+
+@if (ViewBag.genReport)
+{
+    <br />
+    if (PermissionChecker.CheckUserPermission(Session["permission"].ToString(), "download", "1"))
+    {
+    @Html.ActionLink("PDF", "downloadCustomerReportPDF", new { id = Model.id }, new { onclick = "generatePDF(this)" }) @:|
+    @Html.ActionLink("Excel", "downloadCustomerReportExcel", new { id = Model.id }, new { onclick = "generateExcel(this)" })
+    }
+<div class="row">
+    <h4><b>A. Working Attendance (All Record)</b></h4>
+    <div class="col-md-11">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th rowspan="2">No:</th>
+                    <th rowspan="2">Ticket ID:</th>
+                    <th rowspan="2">Engineer Served:</th>
+                    <th colspan="3">Work Date:</th>
+                    <th rowspan="2"> </th>
+                    <th colspan="3">Work Date:</th>
+                    <th rowspan="2"> </th>
+                    <th colspan="3">Break Down:</th>
+                    <th rowspan="2"> </th>
+                    <th rowspan="2">Status:</th>
+                </tr>
+                <tr>
+                    <th>Day:</th>
+                    <th>Type:</th>
+                    <th>Date:</th>
+                    <th>Time In:</th>
+                    <th>Time Out:</th>
+                    <th>Total Hour:</th>
+                    <th>0000-0900 hrs:</th>
+                    <th>0900-1700 hrs:</th>
+                    <th>1700-2359hrs:</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (ViewBag.result.Count <= 0)
+                {
+                    <tr>
+                        <td colspan="16">No record found</td>
+                    </tr>
+                }
+                @foreach (var result in ViewBag.result)
+                {
+                    counter++;
+                    <tr>
+                        <td>@counter</td>
+                        <td>@result.ticket_id</td>
+                        <td>@result.employee_name</td>
+                        <td>@result.working_date.ToString("dddd")</td>
+                        <td>@result.working_date_type</td>
+                        <td>@result.working_date.ToString("dd/MM/yyyy")</td>
+                        <td></td>
+                        <td>@result.time_in.ToString("HH:mm")</td>
+                        <td>@result.time_out.ToString("HH:mm")</td>
+                        <td>@result.total_working_hour</td>
+                        <td></td>
+                        @{
+                            dynamic beforeWorkingHour = (TimeSpan.Parse("09:00") - TimeSpan.Parse(result.time_in.ToString("HH:mm"))).Hours;
+                            beforeWorkingHour = Convert.ToInt32(beforeWorkingHour.ToString()) < 0 ? "0" : beforeWorkingHour.ToString();
+                            dynamic afterWorkingHour = (TimeSpan.Parse(result.time_out.ToString("HH:mm")) - TimeSpan.Parse("17:00")).Hours;
+                            afterWorkingHour = Convert.ToInt32(afterWorkingHour.ToString()) < 0 ? "0" : afterWorkingHour.ToString();
+                            dynamic workingHour = Convert.ToInt32(result.total_working_hour) - Convert.ToInt32(beforeWorkingHour) - Convert.ToInt32(afterWorkingHour);
+                            workingHour = workingHour < 0 ? "0" : workingHour.ToString();
+
+
+                            ttlBeforeWorkingHr = ttlBeforeWorkingHr + Convert.ToInt32(beforeWorkingHour);
+                            ttlAfterWorkingHr = ttlAfterWorkingHr + Convert.ToInt32(afterWorkingHour);
+                            ttlWorkingHr = ttlWorkingHr + Convert.ToInt32(workingHour);
+
+                        }
+                        <td>@beforeWorkingHour</td>
+                        <td>@workingHour</td>
+                        <td>@afterWorkingHour</td>
+                        <td></td>
+                        <td>@result.approval_status</td>
+                    </tr>
+
+                            }
+                <tr>
+                    <td colspan="8"></td>
+                    <td>Total</td>
+                    <td>@(ttlBeforeWorkingHr + ttlAfterWorkingHr + ttlWorkingHr)</td>
+                    <td></td>
+                    <td>@ttlBeforeWorkingHr</td>
+                    <td>@ttlWorkingHr</td>
+                    <td>@ttlAfterWorkingHr</td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<br />
+ttlWorkingHr = 0; ttlAfterWorkingHr = 0; ttlBeforeWorkingHr = 0; counter = 0;
+<div class="row">
+    <h4><b>B. Normal Bussiness Day</b></h4>
+    <div class="col-md-11">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th rowspan="2">No:</th>
+                    <th rowspan="2">Ticket ID:</th>
+                    <th rowspan="2">Engineer Served:</th>
+                    <th colspan="3">Work Date:</th>
+                    <th rowspan="2"> </th>
+                    <th colspan="3">Work Date:</th>
+                    <th rowspan="2"> </th>
+                    <th colspan="3">Break Down:</th>
+                    <th rowspan="2"> </th>
+                    <th rowspan="2">Status:</th>
+                </tr>
+                <tr>
+                    <th>Day:</th>
+                    <th>Type:</th>
+                    <th>Date:</th>
+                    <th>Time In:</th>
+                    <th>Time Out:</th>
+                    <th>Total Hour:</th>
+                    <th>0000-0900 hrs:</th>
+                    <th>0900-1700 hrs:</th>
+                    <th>1700-2359hrs:</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (ViewBag.result.Count <= 0)
+                {
+                    <tr>
+                        <td colspan="16">No record found</td>
+                    </tr>
+                }
+                @foreach (var result in ViewBag.result)
+                {
+                    if (result.working_date_type == "BD")
+                    {
+                        counter++;
+                        <tr>
+                            <td>@counter</td>
+                            <td>@result.ticket_id</td>
+                            <td>@result.employee_name</td>
+                            <td>@result.working_date.ToString("dddd")</td>
+                            <td>@result.working_date_type</td>
+                            <td>@result.working_date.ToString("dd/MM/yyyy")</td>
+                            <td></td>
+                            <td>@result.time_in.ToString("HH:mm")</td>
+                            <td>@result.time_out.ToString("HH:mm")</td>
+                            <td>@result.total_working_hour</td>
+                            <td></td>
+                            @{
+                                dynamic beforeWorkingHour = (TimeSpan.Parse("09:00") - TimeSpan.Parse(result.time_in.ToString("HH:mm"))).Hours;
+                                beforeWorkingHour = Convert.ToInt32(beforeWorkingHour.ToString()) < 0 ? "0" : beforeWorkingHour.ToString();
+                                dynamic afterWorkingHour = (TimeSpan.Parse(result.time_out.ToString("HH:mm")) - TimeSpan.Parse("17:00")).Hours;
+                                afterWorkingHour = Convert.ToInt32(afterWorkingHour.ToString()) < 0 ? "0" : afterWorkingHour.ToString();
+                                dynamic workingHour = Convert.ToInt32(result.total_working_hour) - Convert.ToInt32(beforeWorkingHour) - Convert.ToInt32(afterWorkingHour);
+                                workingHour = workingHour < 0 ? "0" : workingHour.ToString();
+
+
+                                ttlBeforeWorkingHr = ttlBeforeWorkingHr + Convert.ToInt32(beforeWorkingHour);
+                                ttlAfterWorkingHr = ttlAfterWorkingHr + Convert.ToInt32(afterWorkingHour);
+                                ttlWorkingHr = ttlWorkingHr + Convert.ToInt32(workingHour);
+
+                                ttlBDBeforeWorkingHr = ttlBDBeforeWorkingHr + Convert.ToInt32(beforeWorkingHour);
+                                ttlBDAfterWorkingHr = ttlBDAfterWorkingHr + Convert.ToInt32(afterWorkingHour);
+                                ttlBDWorkingHr = ttlBDWorkingHr + Convert.ToInt32(workingHour);
+
+                            }
+                            <td>@beforeWorkingHour</td>
+                            <td>@workingHour</td>
+                            <td>@afterWorkingHour</td>
+                            <td></td>
+                            <td>@result.approval_status</td>
+                        </tr>
+                                    }
+                                }
+                <tr>
+                    <td colspan="8"></td>
+                    <td>Total</td>
+                    <td>@(ttlBeforeWorkingHr + ttlAfterWorkingHr + ttlWorkingHr)</td>
+                    <td></td>
+                    <td>@ttlBeforeWorkingHr</td>
+                    <td>@ttlWorkingHr</td>
+                    <td>@ttlAfterWorkingHr</td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<br />
+ ttlWorkingHr = 0; ttlAfterWorkingHr = 0; ttlBeforeWorkingHr = 0; counter = 0;
+<div class="row">
+    <h4><b>C. None Bussiness Day ( Public Holiday)</b></h4>
+    <div class="col-md-11">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th rowspan="2">No:</th>
+                    <th rowspan="2">Ticket ID:</th>
+                    <th rowspan="2">Engineer Served:</th>
+                    <th colspan="3">Work Date:</th>
+                    <th rowspan="2"> </th>
+                    <th colspan="3">Work Date:</th>
+                    <th rowspan="2"> </th>
+                    <th colspan="3">Break Down:</th>
+                    <th rowspan="2"> </th>
+                    <th rowspan="2">Status:</th>
+                </tr>
+                <tr>
+                    <th>Day:</th>
+                    <th>Type:</th>
+                    <th>Date:</th>
+                    <th>Time In:</th>
+                    <th>Time Out:</th>
+                    <th>Total Hour:</th>
+                    <th>0000-0900 hrs:</th>
+                    <th>0900-1700 hrs:</th>
+                    <th>1700-2359hrs:</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (ViewBag.result.Count <= 0)
+                {
+                    <tr>
+                        <td colspan="16">No record found</td>
+                    </tr>
+                }
+                @foreach (var result in ViewBag.result)
+                {
+                    if (result.working_date_type == "NBD")
+                    {
+                        counter++;
+                        <tr>
+                            <td>@counter</td>
+                            <td>@result.ticket_id</td>
+                            <td>@result.employee_name</td>
+                            <td>@result.working_date.ToString("dddd")</td>
+                            <td>@result.working_date_type</td>
+                            <td>@result.working_date.ToString("dd/MM/yyyy")</td>
+                            <td></td>
+                            <td>@result.time_in.ToString("HH:mm")</td>
+                            <td>@result.time_out.ToString("HH:mm")</td>
+                            <td>@result.total_working_hour</td>
+                            <td></td>
+                            @{
+                                dynamic beforeWorkingHour = (TimeSpan.Parse("09:00") - TimeSpan.Parse(result.time_in.ToString("HH:mm"))).Hours;
+                                beforeWorkingHour = Convert.ToInt32(beforeWorkingHour.ToString()) < 0 ? "0" : beforeWorkingHour.ToString();
+                                dynamic afterWorkingHour = (TimeSpan.Parse(result.time_out.ToString("HH:mm")) - TimeSpan.Parse("17:00")).Hours;
+                                afterWorkingHour = Convert.ToInt32(afterWorkingHour.ToString()) < 0 ? "0" : afterWorkingHour.ToString();
+                                dynamic workingHour = Convert.ToInt32(result.total_working_hour) - Convert.ToInt32(beforeWorkingHour) - Convert.ToInt32(afterWorkingHour);
+                                workingHour = workingHour < 0 ? "0" : workingHour.ToString();
+
+
+                                ttlBeforeWorkingHr = ttlBeforeWorkingHr + Convert.ToInt32(beforeWorkingHour);
+                                ttlAfterWorkingHr = ttlAfterWorkingHr + Convert.ToInt32(afterWorkingHour);
+                                ttlWorkingHr = ttlWorkingHr + Convert.ToInt32(workingHour);
+
+                                ttlNBDBeforeWorkingHr = ttlNBDBeforeWorkingHr + Convert.ToInt32(beforeWorkingHour);
+                                ttlNBDAfterWorkingHr = ttlNBDAfterWorkingHr + Convert.ToInt32(afterWorkingHour);
+                                ttlNBDWorkingHr = ttlNBDWorkingHr + Convert.ToInt32(workingHour);
+                            }
+                            <td>@beforeWorkingHour</td>
+                            <td>@workingHour</td>
+                            <td>@afterWorkingHour</td>
+                            <td></td>
+                            <td>@result.approval_status</td>
+                        </tr>
+                                    }
+                                }
+                <tr>
+                    <td colspan="8"></td>
+                    <td>Total</td>
+                    <td>@(ttlBeforeWorkingHr + ttlAfterWorkingHr + ttlWorkingHr)</td>
+                    <td></td>
+                    <td>@ttlBeforeWorkingHr</td>
+                    <td>@ttlWorkingHr</td>
+                    <td>@ttlAfterWorkingHr</td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<div class="row">
+    <h4><b>D. Overtime Summary</b></h4>
+    <div class="col-md-6" style="border:0.1px solid black;">
+        <h4><b>Business Day (BD)</b></h4>
+        <div class="row">
+            <div class="col-md-6">
+                <h5><b>Total Midnight Overtime (0000-0900hrs)</b></h5>
+            </div>
+            <div class="col-md-4"></div>
+            <div class="col-md-2">
+                <input type="text" class="form-control" value="@ttlBDBeforeWorkingHr" readonly />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <h5><b>Total Normal Hour (0900-1700hrs)</b></h5>
+            </div>
+            <div class="col-md-4"></div>
+            <div class="col-md-2">
+                <input type="text" class="form-control" value="@ttlBDWorkingHr" readonly />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <h5><b>Total Overtime (1700-2359hrs)</b></h5>
+            </div>
+            <div class="col-md-4"></div>
+            <div class="col-md-2">
+                <input type="text" class="form-control" value="@ttlBDAfterWorkingHr" readonly />
+            </div>
+        </div>
+        <br />
+    </div>
+    <div class="col-md-6" style="border:0.1px solid black;">
+        <h4><b>None Business Day (NBD)</b></h4>
+        <div class="row">
+            <div class="col-md-6">
+                <h5><b>Total Midnight Overtime (0000-0900hrs)</b></h5>
+            </div>
+            <div class="col-md-4"></div>
+            <div class="col-md-2">
+                <input type="text" class="form-control" value="@ttlNBDBeforeWorkingHr" readonly />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <h5><b>Total Normal Hour (0900-1700hrs)</b></h5>
+            </div>
+            <div class="col-md-4"></div>
+            <div class="col-md-2">
+                <input type="text" class="form-control" value="@ttlNBDWorkingHr" readonly />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <h5><b>Total Overtime (1700-2359hrs)</b></h5>
+            </div>
+            <div class="col-md-4"></div>
+            <div class="col-md-2">
+                <input type="text" class="form-control" value="@ttlNBDAfterWorkingHr" readonly />
+            </div>
+        </div>
+        <br />
+    </div>
+</div>
+                                }
+<div class="row" style="margin-top:20px">
+    @Html.ActionLink("Back to List", "Index")
+</div>
+<script>
+        $(document).ready(function () {
+
+            $("#dateOfReport").datepicker({
+                "dateFormat": "mm/yy",
+                changeMonth: true,
+                changeYear: true,
+                numberOfMonths: 1, onClose: function () {
+                    var iMonth = $("#ui-datepicker-div .ui-datepicker-month :selected").val();
+                    var iYear = $("#ui-datepicker-div .ui-datepicker-year :selected").val();
+                    $(this).datepicker('setDate', new Date(iYear, iMonth, 1));
+                },
+            });
+            
+    });
+    var flag = true;
+    var flag2 = true;
+    function generatePDF(object) {
+        if (flag) {
+            object.href += '?reportDate=' + document.getElementById("dateOfReport").value + '&isChargeable=' + document.getElementById("isChargeable").checked;
+            flag = false;
+        }
+    }
+
+    function generateExcel(object) {
+        if (flag2) {
+            object.href += '?reportDate=' + document.getElementById("dateOfReport").value + '&isChargeable=' + document.getElementById("isChargeable").checked;
+            flag2 = false;
+        }
+    }
+
+
+
+        
+</script>
+                           

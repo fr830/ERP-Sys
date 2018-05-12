@@ -1,0 +1,55 @@
+﻿@model IEnumerable<MrAng_Invoice.Models.HolidayTable>
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>List of Holiday Table</h2>
+
+<p>
+@if (PermissionChecker.CheckUserPermission(Session["permission"].ToString(), "create", "8"))
+{
+    @Html.ActionLink("Create New Holiday", "Create")
+}
+</p>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.state)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.year)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.referenceKey)
+        </th>
+
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.state)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.year)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.referenceKey)
+        </td>
+        <td>
+            @if (PermissionChecker.CheckUserPermission(Session["permission"].ToString(), "edit", "8"))
+            {
+            @Html.ActionLink("Edit", "Edit", new { id = item.ID }) @:|
+            }                            
+            @if (PermissionChecker.CheckUserPermission(Session["permission"].ToString(), "delete", "8"))
+            {
+            @Html.ActionLink("Delete", "Delete", new { id = item.ID })
+            }
+        </td>
+    </tr>
+}
+
+</table>

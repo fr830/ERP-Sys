@@ -1,0 +1,76 @@
+﻿@model IEnumerable<MrAng_Invoice.Models.AccountInfo>
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Engineer Worksheet Summary</h2>
+@using (Html.BeginForm("Index", "Employee_Management", FormMethod.Post))
+{
+    <p>
+        Employee Username:
+        <input list="employeeUsernameList" name="employeeUsername" id="employeeUsername">
+        <datalist id="employeeUsernameList">
+            @{
+                for (int i = 0; i < ViewBag.employeeUsername.Count; i++)
+                {
+                    <option value="@ViewBag.employeeUsername[i]">@ViewBag.employeeUsername[i]</option>
+                }
+
+            }
+        </datalist>
+        Employee Name:
+        <input list="employeeNameList" name="employeeName" id="employeeName">
+        <datalist id="employeeNameList">
+            @{
+                for (int i = 0; i < ViewBag.employeeName.Count; i++)
+                {
+                    <option value="@ViewBag.employeeName[i]">@ViewBag.employeeName[i]</option>
+                }
+
+            }
+
+        </datalist>
+        <input type="submit" value="Filter" />
+    </p>
+
+}
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.username)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.user_full_name)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.user_contact_no)
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.username)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.user_full_name)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.user_contact_no)
+        </td>
+        @if (PermissionChecker.CheckUserPermission(Session["permission"].ToString(), "view", "9"))
+        {
+        <td>
+            @if (LoginFunctionView.getUserTypeByUsername(Session["username"].ToString()) == "Admin" || Session["username"].ToString() == item.username)
+            {
+            @Html.ActionLink("Details", "Details", new { id=item.ID, genReport = false }) 
+            }
+        </td>
+        }
+    </tr>
+}
+
+</table>

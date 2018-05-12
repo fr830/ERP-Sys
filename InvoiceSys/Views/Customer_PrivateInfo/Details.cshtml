@@ -1,0 +1,203 @@
+﻿@model MrAng_Invoice.Models.Customer_PrivateInfo
+
+@{
+    ViewBag.Title = "Details";
+}
+
+<h2>Details</h2>
+
+<div>
+    <h4>Details of @Model.company_name</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.company_name)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.company_name)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.company_reg_no)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.company_reg_no)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.payment_term)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.payment_term)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.company_gst_no)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.company_gst_no)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.company_address)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.company_address)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.state)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.state)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.company_fax_no)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.company_fax_no)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.company_tel_no)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.company_tel_no)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.company_person_incharge1)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.company_person_incharge1)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.company_department1)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.company_department1)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.company_position1)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.company_position1)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.company_email1)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.company_email1)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.company_tel_no1)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.company_tel_no1)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.company_person_incharge2)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.company_person_incharge2)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.company_department2)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.company_department2)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.company_position2)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.company_position2)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.company_email2)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.company_email2)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.company_tel_no2)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.company_tel_no2)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.company_person_incharge3)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.company_person_incharge3)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.company_department3)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.company_department3)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.company_position3)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.company_position3)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.company_email3)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.company_email3)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.company_tel_no3)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.company_tel_no3)
+        </dd>
+
+
+    </dl>
+</div>
+<p>
+    @Html.ActionLink("Edit", "Edit", new { id = Model.customer_id }) |
+    @Html.ActionLink("Back to List", "Index")
+</p>

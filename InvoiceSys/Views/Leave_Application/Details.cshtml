@@ -1,0 +1,121 @@
+﻿@model MrAng_Invoice.Models.Leave_Application
+
+@{
+    ViewBag.Title = "Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Details</h2>
+
+<div>
+    <h4>Leave_Application</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.leave_ticket_id)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.leave_ticket_id)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.leave_applied_from)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.leave_applied_from)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.leave_applied_to)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.leave_applied_to)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.no_days_applied)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.no_days_applied)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.status)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.status)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.type_of_leave)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.type_of_leave)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.reason)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.reason)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.submitted_by)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.submitted_by)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.submitted_date)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.submitted_date)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.approved_by)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.approved_by)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.approval_date)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.approval_date)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.approval_reason)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.approval_reason)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.username_submitted)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.username_submitted)
+        </dd>
+
+    </dl>
+</div>
+<p>
+    @Html.ActionLink("Back to List", "Index")
+</p>

@@ -1,0 +1,259 @@
+﻿@model MrAng_Invoice.Models.Employee_WorkSheet
+
+@{
+    ViewBag.Title = "Edit";
+}
+
+<h2>Edit @Model.ticket_ID Info</h2>
+
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    
+    <div class="form-horizontal">
+        <h4>Employee_WorkSheet</h4>
+        <hr />
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        @Html.HiddenFor(model => model.worksheet_ID)
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.ticket_ID, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.ticket_ID, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+                @Html.ValidationMessageFor(model => model.ticket_ID, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.employee_ID, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.employee_ID, new { htmlAttributes = new { @class = "form-control" , @readonly = "readonly"} })
+                @Html.ValidationMessageFor(model => model.employee_ID, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.employee_name, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.employee_name, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+                @Html.ValidationMessageFor(model => model.employee_name, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.working_date, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.working_date, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly", @onChange = "checkTimeOut();showDay(this);checkWorkingDayType(this)" } })
+                @Html.ValidationMessageFor(model => model.working_date, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="control-label  col-md-2">
+                <b>Day:</b>
+            </div>
+            <div class="col-md-10">
+                <input type="text" class="form-control" value="@Model.working_date.DayOfWeek" id="day" name="day" readonly />
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="control-label col-md-2">
+                <b>Working Day Type:</b>
+            </div>
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.working_date_type, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.time_in, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @{ 
+                    string time_in = Model.time_in.ToString("hh:mm tt");
+                }
+                <input type="text" name="time_in" id="time_in" class="form-control" onchange="checkTimeOut()" value="@time_in" readonly />
+                @Html.ValidationMessageFor(model => model.time_in, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.time_out, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @{
+                    string time_out = Model.time_out.ToString("hh:mm tt");
+                }
+                <input type="text" name="time_out" id="time_out" class="form-control" onchange="checkTimeOut()" value="@time_out" readonly />
+                @Html.ValidationMessageFor(model => model.time_out, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.total_working_hour, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.total_working_hour, new { htmlAttributes = new { @class = "form-control",@readonly = "readonly" } })
+                @Html.ValidationMessageFor(model => model.total_working_hour, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.client_served, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                <input list="company" id="client_served" name="client_served" class="form-control" value="@Model.client_served">
+                <datalist id="company">
+                    @{
+                        for (int i = 0; i < ViewBag.company.Count; i++)
+                        {
+                            <option value="@ViewBag.company[i]">@ViewBag.company[i]</option>
+                        }
+
+                    }
+                </datalist>
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.job_location, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.TextAreaFor(model => model.job_location, 10, 40, null)
+                @Html.ValidationMessageFor(model => model.job_location, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.job_description, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.TextAreaFor(model => model.job_description, 10, 40, null)
+                @Html.ValidationMessageFor(model => model.job_description, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.followup_by, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @{Model.followup_by = Session["Name"].ToString();}
+                @Html.EditorFor(model => model.followup_by, new { htmlAttributes = new { @class = "form-control" , @readonly = "readonly" } })
+                @Html.ValidationMessageFor(model => model.followup_by, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.requested_by, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.requested_by, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.requested_by, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.remarks, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.TextAreaFor(model => model.remarks, 10, 40, null)
+                @Html.ValidationMessageFor(model => model.remarks, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.isChargeable, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @if (Model.isChargeable)
+                {
+                    
+                    @Html.CheckBox("isChargeable", true)
+                }
+                else
+                {
+
+                    @Html.CheckBox("isChargeable", false)
+                }
+                @Html.ValidationMessageFor(model => model.isChargeable, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="Save" class="btn btn-default" />
+            </div>
+        </div>
+    </div>
+}
+
+<div>
+    @Html.ActionLink("Back to List", "Index")
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}
+<script>
+    var timeout = null;
+    function checkTimeOut() {
+
+        var time_in = document.getElementById("time_in").value;
+        var time_out = document.getElementById("time_out").value;
+        var total_working_hour = document.getElementById("total_working_hour");
+        clearTimeout(timeout);
+        timeout = setTimeout(function () {
+            if (compareTime(time_in, time_out) < 0) {
+                alert("Invalid Time Out!")
+                total_working_hour.value = 0;
+            } else {
+                total_working_hour.value = compareTime(time_in, time_out);
+            }
+
+
+        }, 1000);
+    }
+
+    $(document).ready(function () {
+        $("#working_date").datepicker({
+            "dateFormat": "yy-mm-dd",
+            changeMonth: true,
+            changeYear: true,
+            numberOfMonths: 1
+        });
+
+        $('#time_in').timepicker();
+        $('#time_out').timepicker();
+    });
+
+    function compareTime(time1, time2) {
+        var timeStart = new Date("01/01/2007 " + time1);
+        var timeEnd = new Date("01/01/2007 " + time2);
+
+        var diff = (timeEnd - timeStart) / 60000; //dividing by seconds and milliseconds
+
+        var minutes = diff % 60;
+        return hours = (diff - minutes) / 60;
+    }
+
+    function showDay(date) {
+        var weekday = new Array(7);
+        weekday[0] = "Sunday";
+        weekday[1] = "Monday";
+        weekday[2] = "Tuesday";
+        weekday[3] = "Wednesday";
+        weekday[4] = "Thursday";
+        weekday[5] = "Friday";
+        weekday[6] = "Saturday";
+        var d = new Date(date.value);
+        var n = weekday[d.getDay()];
+        document.getElementById("day").value = n;
+    }
+
+    function checkWorkingDayType(date) {
+        var xmlhttp;
+        //To check whether browser support which type of AJAX
+        if (window.XMLHttpRequest) {
+            xmlhttp = new XMLHttpRequest();
+        } else { //Code for older browser
+            xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+        }
+
+        xmlhttp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                if (this.responseText == "true") {
+                    document.getElementById("working_date_type").value = "NBD"
+                } else {
+                    document.getElementById("working_date_type").value = "BD"
+                }
+
+            }
+        };
+        xmlhttp.open("GET", "../CheckWorkingDayType?date=" + date.value, true);
+        xmlhttp.send();
+    }
+
+</script>

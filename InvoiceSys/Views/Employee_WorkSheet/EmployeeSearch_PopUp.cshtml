@@ -1,0 +1,99 @@
+﻿@model IEnumerable<MrAng_Invoice.Models.AccountInfo>
+
+@{
+    ViewBag.Title = "EmployeeSearch_PopUp";
+    Layout = "";
+    var id = 0;
+}
+@RenderPage("../HeaderFile.cshtml")
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title - My ASP.NET Application</title>
+
+    @Styles.Render("~/Content/css")
+    @Scripts.Render("~/bundles/modernizr")
+    @Styles.Render("~/Content/fontawesome/font-awesome.css")
+    @Styles.Render("~/Content/fontawesome/font-awesome.min.css")
+</head>
+<body>
+
+
+
+
+    <div class="container body-content">
+        @using (Html.BeginForm("EmployeeSearch_PopUp", "Employee_WorkSheet", FormMethod.Post))
+        {
+            <label>Employee Username:</label>
+            <input list="usernameList" name="username" id="username">
+            <datalist id="usernameList">
+                @for (int i = 0; i < ViewBag.usernameList.Count; i++)
+                {
+                    <option value="@ViewBag.usernameList[i]">@ViewBag.usernameList[i]</option>
+                }
+            </datalist>
+            <label>Employee Name:</label>
+            <input list="nameList" name="name" id="name">
+            <datalist id="nameList">
+                @for (int i = 0; i < ViewBag.nameList.Count; i++)
+                {
+                    <option value="@ViewBag.nameList[i]">@ViewBag.nameList[i]</option>
+                }
+            </datalist>
+            <input type="submit" value="Filter" />
+        }
+        <h2>Employee Search: </h2>
+        <table class="table">
+            <tr>
+                <th>
+                    @Html.DisplayNameFor(model => model.user_full_name)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.username)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.employee_id)
+                </th>
+                <th>
+                    Action
+                </th>
+            </tr>
+
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td id="user_full_name_@id">
+                        @Html.DisplayFor(modelItem => item.user_full_name)
+                    </td>
+                    <td id="username_@id">
+                        @Html.DisplayFor(modelItem => item.username)
+                    </td>
+                    <td id="user_id_@id">
+                        @Html.DisplayFor(modelItem => item.employee_id)
+                    </td>
+                    <td>
+                        <button type="button" onclick="selectEmployee(@id)" class="btn btn-primary">Submit</button>
+                    </td>
+                </tr>
+                id++;
+            }
+
+        </table>
+    </div>
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+
+
+</body>
+</html>
+<script>
+    function selectEmployee(id) {
+        var userFullName = document.getElementById("user_full_name_" + id).innerText;
+        var username = document.getElementById("username_" + id).innerText;
+        var userID = document.getElementById("user_id_" + id).innerText;
+        window.opener.document.getElementById("employee_ID").value = userID;
+        window.opener.document.getElementById("employee_name").value = userFullName;
+        window.close();
+    }
+</script>

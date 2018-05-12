@@ -1,0 +1,480 @@
+﻿@model  MrAng_Invoice.Models.Quotation_Details
+@RenderPage("../HeaderFile.cshtml")
+@{
+    Layout = null;
+}
+@using System;
+@using System.IO;
+@using iTextSharp.text;
+@using iTextSharp.text.html;
+@using iTextSharp.text.pdf;
+@using System.Data;
+@using System.Data.SqlClient;
+@using System.Collections;
+@using System.Globalization;
+@using System.Threading;
+
+@{
+    Database db = Database.Open("InvoiceSysDBContext");
+    var company_name = db.QueryValue("SELECT value FROM tbl_system_parameters WHERE name = 'company_name'");
+    var company_registration_no = db.QueryValue("SELECT value FROM tbl_system_parameters WHERE name = 'company_registration_no'");
+    var company_address = db.QueryValue("SELECT value FROM tbl_system_parameters WHERE name = 'company_address'");
+    var company_gst_no = db.QueryValue("SELECT value FROM tbl_system_parameters WHERE name = 'company_gst_no'");
+    var customer_contact = db.QuerySingle("SELECT TOP 1 company_fax_no, company_tel_no FROM Customer_PrivateInfo WHERE company_name = @0", Model.company_name);
+    NumberToEnglish n2e = new NumberToEnglish();
+    Document document = new Document(PageSize.A4, -40f, -40f, 30f, 0f);
+
+    PdfWriter writer = PdfWriter.GetInstance(document, Response.OutputStream);
+    PdfPTable table = new PdfPTable(12);
+    PdfPTable invoiceBody = new PdfPTable(18);
+    PdfPTable footerTable = new PdfPTable(12);
+
+
+    /*PdfPTable dummy = new PdfPTable(12);
+    float dummyTotalHeight = 0.2f;
+    dummy.KeepTogether = true;*/
+    footerTable.KeepTogether = true;
+
+
+    document.Open();
+    PdfContentByte cb = writer.DirectContent;
+    cb.BeginText();
+    cb.EndText();
+    BaseFont bfTimes = BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, false); // create fonts
+    Font times = new Font(bfTimes, 9,Font.BOLD); // Adjust size
+    Font times_unbold = new Font(bfTimes, 8); // Adjust size
+    Font headerFont = new Font(bfTimes, 9,Font.BOLD); // Adjust size
+
+    BaseFont bfTimes2 = BaseFont.CreateFont(BaseFont.TIMES_ROMAN, BaseFont.CP1252, false); // create fonts
+    Font times2 = new Font(bfTimes2, 11); // Adjust size
+
+    BaseFont bfTimes23= BaseFont.CreateFont(BaseFont.HELVETICA_BOLD, BaseFont.CP1252, false); // create fonts
+    Font times3 = new Font(bfTimes2, 14,Font.BOLD,BaseColor.RED); // Adjust size
+
+    PdfPCell space = new PdfPCell(new Paragraph("\r\n"));
+    space.Colspan = 12;
+    space.Border = Rectangle.NO_BORDER;
+
+    PdfPCell companyName = new PdfPCell(new Phrase(new Paragraph(company_name+" ("+company_registration_no+")", times)));
+    companyName.Colspan = 12;
+    companyName.HorizontalAlignment = 1; //0=Left, 1=Centre, 2=Right
+    companyName.Border = Rectangle.NO_BORDER;
+
+    table.AddCell(companyName);
+
+    var addressList = company_address.Split(',');
+    var address1 = "";
+    var address2 = "";
+    for(int i=0; i < addressList.Length; i++)
+    {
+        if (i <= 1)
+        {
+            address1 += addressList[i] + ",";
+        }
+        else if (i < addressList.Length-1)
+        {
+            address2 += addressList[i]+",";
+        }
+        else
+        {
+            address2 += addressList[i] + ",";
+        }
+    }
+
+    var customerAddressList = Model.company_address.Split(',');
+    var customer_address1 = "";
+    var customer_address2 = "";
+    var customer_address3 = "";
+    var customer_address4 = "";
+
+    for (int i = 0; i < customerAddressList.Length; i++)
+    {
+        if (i <= 1)
+        {
+            customer_address1 += customerAddressList[i].TrimStart() + ",";
+        }
+        else if (i >= 2 && i <= 3)
+        {
+            customer_address2 += customerAddressList[i].TrimStart() + ",";
+        }
+        else if (i >= 3)
+        {
+            customer_address3 += customerAddressList[i].TrimStart() + ",";
+        }
+        else
+        {
+            customer_address4 += customerAddressList[i].TrimStart()+",";
+        }
+    }
+    PdfPCell companyAddress = new PdfPCell(new Phrase(new Paragraph(address1+"\r\n"+address2.Remove(address2.Length - 1, 1), times)));
+    companyAddress.Colspan = 12;
+    companyAddress.HorizontalAlignment = 1; //0=Left, 1=Centre, 2=Right
+    companyAddress.Border = Rectangle.NO_BORDER;
+    table.AddCell(companyAddress);
+
+    PdfPCell gstNo = new PdfPCell(new Phrase(new Paragraph("(GST ID NO:"+company_gst_no+")", times)));
+    gstNo.Colspan = 12;
+    gstNo.HorizontalAlignment = 1; //0=Left, 1=Centre, 2=Right
+    gstNo.Border = Rectangle.NO_BORDER;
+    table.AddCell(gstNo);
+
+    PdfPCell quotationLabel = new PdfPCell(new Phrase(new Paragraph("QUOTATION", times3)));
+    quotationLabel.Colspan = 12;
+    quotationLabel.HorizontalAlignment = 2; //0=Left, 1=Centre, 2=Right
+    quotationLabel.Border = Rectangle.NO_BORDER;
+    table.AddCell(quotationLabel);
+    table.AddCell(space);
+
+    //line 1***********************************************************************************************************************************************************
+    PdfPCell customerAddress1 = new PdfPCell(new Phrase(new Paragraph(Model.company_name,times)));
+    customerAddress1.Colspan = 6;
+    customerAddress1.HorizontalAlignment = 0; //0=Left, 1=Centre, 2=Right
+    customerAddress1.Border = Rectangle.NO_BORDER;
+    table.AddCell(customerAddress1);
+
+    PdfPCell quotationNoLabel = new PdfPCell(new Phrase(new Paragraph("Quotation No: ", times)));
+    quotationNoLabel.Colspan = 3;
+    quotationNoLabel.HorizontalAlignment = 2; //0=Left, 1=Centre, 2=Right
+    quotationNoLabel.Border = Rectangle.NO_BORDER;
+    table.AddCell(quotationNoLabel);
+
+    PdfPCell quotationNoValue = new PdfPCell(new Phrase(new Paragraph(Model.quotation_no, times)));
+    quotationNoValue.Colspan = 3;
+    quotationNoValue.HorizontalAlignment = 2; //0=Left, 1=Centre, 2=Right
+    quotationNoValue.Border = Rectangle.NO_BORDER;
+    table.AddCell(quotationNoValue);
+
+    //line 2***********************************************************************************************************************************************************
+
+    space = new PdfPCell(new Phrase(new Paragraph(customer_address1, times)));
+    space.Colspan = 6;
+    space.HorizontalAlignment = 0; //0=Left, 1=Centre, 2=Right
+    space.Border = Rectangle.NO_BORDER;
+    table.AddCell(space);
+
+    PdfPCell dateLabel = new PdfPCell(new Phrase(new Paragraph("Date: ", times)));
+    dateLabel.Colspan = 3;
+    dateLabel.HorizontalAlignment = 2; //0=Left, 1=Centre, 2=Right
+    dateLabel.Border = Rectangle.NO_BORDER;
+    table.AddCell(dateLabel);
+
+    PdfPCell dateValue = new PdfPCell(new Phrase(new Paragraph(Model.created_date.ToString("yyyy/MM/dd"), times)));
+    dateValue.Colspan = 3;
+    dateValue.HorizontalAlignment = 2; //0=Left, 1=Centre, 2=Right
+    dateValue.Border = Rectangle.NO_BORDER;
+    table.AddCell(dateValue);
+
+    //line 3***********************************************************************************************************************************************************
+    if (!String.IsNullOrEmpty(customer_address2) && String.IsNullOrEmpty(customer_address3))
+    {
+        customer_address2 = customer_address2.Remove(customer_address2.Length - 1, 1);
+    }
+    space = new PdfPCell(new Phrase(new Paragraph(customer_address2, times)));
+    space.Colspan = 6;
+    space.HorizontalAlignment = 0; //0=Left, 1=Centre, 2=Right
+    space.Border = Rectangle.NO_BORDER;
+    table.AddCell(space);
+
+    PdfPCell paymentTermLabel = new PdfPCell(new Phrase(new Paragraph("Payment Term: ", times)));
+    paymentTermLabel.Colspan = 3;
+    paymentTermLabel.HorizontalAlignment = 2; //0=Left, 1=Centre, 2=Right
+    paymentTermLabel.Border = Rectangle.NO_BORDER;
+    table.AddCell(paymentTermLabel);
+
+    PdfPCell paymentTermValue = new PdfPCell(new Phrase(new Paragraph(Model.payment_term, times)));
+    paymentTermValue.Colspan = 3;
+    paymentTermValue.HorizontalAlignment = 2; //0=Left, 1=Centre, 2=Right
+    paymentTermValue.Border = Rectangle.NO_BORDER;
+    table.AddCell(paymentTermValue);
+
+    //line 4***********************************************************************************************************************************************************
+    if (!String.IsNullOrEmpty(customer_address3) && String.IsNullOrEmpty(customer_address4))
+    {
+        customer_address3 = customer_address3.Remove(customer_address3.Length - 1, 1);
+    }
+    space = new PdfPCell(new Phrase(new Paragraph(customer_address3, times)));
+    space.Colspan = 6;
+    space.HorizontalAlignment = 0; //0=Left, 1=Centre, 2=Right
+    space.Border = Rectangle.NO_BORDER;
+    table.AddCell(space);
+
+    PdfPCell printDateLabel = new PdfPCell(new Phrase(new Paragraph("Printed On: ", times)));
+    printDateLabel.Colspan = 3;
+    printDateLabel.HorizontalAlignment = 2; //0=Left, 1=Centre, 2=Right
+    printDateLabel.Border = Rectangle.NO_BORDER;
+    table.AddCell(printDateLabel);
+
+    PdfPCell printDateValue = new PdfPCell(new Phrase(new Paragraph(DateTime.Now.ToString("yyyy/MM/dd"), times)));
+    printDateValue.Colspan = 3;
+    printDateValue.HorizontalAlignment = 2; //0=Left, 1=Centre, 2=Right
+    printDateValue.Border = Rectangle.NO_BORDER;
+    table.AddCell(printDateValue);
+
+    //line 5************************************************************************************************************************************************************
+    if (!String.IsNullOrEmpty(customer_address4))
+    {
+        customer_address4 = customer_address4.Remove(customer_address4.Length - 1, 1);
+    }
+    space = new PdfPCell(new Phrase(new Paragraph(customer_address4, times)));
+    space.Colspan = 6;
+    space.HorizontalAlignment = 0; //0=Left, 1=Centre, 2=Right
+    space.Border = Rectangle.NO_BORDER;
+    table.AddCell(space);
+
+    PdfPCell printedByLabel = new PdfPCell(new Phrase(new Paragraph("Printed By: ", times)));
+    printedByLabel.Colspan = 3;
+    printedByLabel.HorizontalAlignment = 2; //0=Left, 1=Centre, 2=Right
+    printedByLabel.Border = Rectangle.NO_BORDER;
+    table.AddCell(printedByLabel);
+
+    PdfPCell printedByValue = new PdfPCell(new Phrase(new Paragraph(Session["name"].ToString(), times)));
+    printedByValue.Colspan = 3;
+    printedByValue.HorizontalAlignment = 2; //0=Left, 1=Centre, 2=Right
+    printedByValue.Border = Rectangle.NO_BORDER;
+    table.AddCell(printedByValue);
+
+    PdfPCell company_contact_info = new PdfPCell(new Phrase(new Paragraph("Attn To: ", times)));
+    company_contact_info.Colspan = 1;
+    company_contact_info.Border = Rectangle.NO_BORDER;
+    table.AddCell(company_contact_info);
+
+    company_contact_info = new PdfPCell(new Phrase(new Paragraph(Model.attn_to, times)));
+    company_contact_info.Colspan = 3;
+    company_contact_info.Border = Rectangle.NO_BORDER;
+    table.AddCell(company_contact_info);
+
+    space = new PdfPCell(new Phrase(new Paragraph("", times)));
+    space.Colspan = 8;
+    space.Border = Rectangle.NO_BORDER;
+    table.AddCell(space);
+
+    company_contact_info = new PdfPCell(new Phrase(new Paragraph("Tel No: ", times)));
+    company_contact_info.Colspan = 1;
+    company_contact_info.Border = Rectangle.NO_BORDER;
+    table.AddCell(company_contact_info);
+
+    company_contact_info = new PdfPCell(new Phrase(new Paragraph(customer_contact.company_tel_no, times)));
+    company_contact_info.Colspan = 3;
+    company_contact_info.Border = Rectangle.NO_BORDER;
+    table.AddCell(company_contact_info);
+
+    space = new PdfPCell(new Phrase(new Paragraph("", times)));
+    space.Colspan = 8;
+    space.Border = Rectangle.NO_BORDER;
+    table.AddCell(space);
+
+    company_contact_info = new PdfPCell(new Phrase(new Paragraph("Fax No: ", times)));
+    company_contact_info.Colspan = 1;
+    company_contact_info.Border = Rectangle.NO_BORDER;
+    table.AddCell(company_contact_info);
+
+    company_contact_info = new PdfPCell(new Phrase(new Paragraph(customer_contact.company_fax_no, times)));
+    company_contact_info.Colspan = 3;
+    company_contact_info.Border = Rectangle.NO_BORDER;
+    table.AddCell(company_contact_info);
+
+    space = new PdfPCell(new Phrase(new Paragraph("", times)));
+    space.Colspan = 8;
+    space.Border = Rectangle.NO_BORDER;
+    table.AddCell(space);
+
+    space = new PdfPCell(new Phrase(new Paragraph("\r\n", times)));
+    space.Colspan = 12;
+    space.Border = Rectangle.NO_BORDER;
+    table.AddCell(space);
+
+    //Invoice Details*************************************************************************************************************
+    PdfPCell invoice_header = new PdfPCell(new Phrase(new Paragraph("Item No:", headerFont)));
+    invoice_header.Colspan = 1; invoice_header.HorizontalAlignment = 1;
+    invoiceBody.AddCell(invoice_header);
+
+    invoice_header = new PdfPCell(new Phrase(new Paragraph("Description:", headerFont)));
+    invoice_header.Colspan = 7; invoice_header.HorizontalAlignment = 1;
+    invoiceBody.AddCell(invoice_header);
+
+    invoice_header = new PdfPCell(new Phrase(new Paragraph("Qty:", headerFont)));
+    invoice_header.Colspan = 1; invoice_header.HorizontalAlignment = 1;
+    invoiceBody.AddCell(invoice_header);
+
+    invoice_header = new PdfPCell(new Phrase(new Paragraph("Unit Price:", headerFont)));
+    invoice_header.Colspan = 2; invoice_header.HorizontalAlignment = 1;
+    invoiceBody.AddCell(invoice_header);
+
+    invoice_header = new PdfPCell(new Phrase(new Paragraph("TTL EXCL GST:", headerFont)));
+    invoice_header.Colspan = 2; invoice_header.HorizontalAlignment = 1;
+    invoiceBody.AddCell(invoice_header);
+
+    invoice_header = new PdfPCell(new Phrase(new Paragraph("GST:", headerFont)));
+    invoice_header.Colspan = 2; invoice_header.HorizontalAlignment = 1;
+    invoiceBody.AddCell(invoice_header);
+
+    invoice_header = new PdfPCell(new Phrase(new Paragraph("TTL INLC GST:", headerFont)));
+    invoice_header.Colspan = 2; invoice_header.HorizontalAlignment = 1;
+    invoiceBody.AddCell(invoice_header);
+
+    invoice_header = new PdfPCell(new Phrase(new Paragraph("Tax Code:", headerFont)));
+    invoice_header.Colspan = 1; invoice_header.HorizontalAlignment = 1;
+    invoiceBody.AddCell(invoice_header);
+
+    var result = db.Query("SELECT * FROM Quotation_Elaboration WHERE quotation_no = @0 AND status ='CURRENT'",Model.quotation_no);
+    var totalExclGST = 0.00;
+    var totalGST = 0.00;
+    var totalInclGST = 0.00;
+    foreach (var r in result)
+    {
+        totalExclGST = totalExclGST + (r.item_price * r.item_qty);
+        totalGST = totalGST + (r.item_price * 0.06 * r.item_qty);
+        totalInclGST = totalInclGST + (r.item_price * 1.06 * r.item_qty);
+        PdfPCell invoice_details = new PdfPCell(new Phrase(new Paragraph(r.item_no.ToString(), times_unbold)));
+        invoice_details.Colspan = 1; invoice_details.HorizontalAlignment = 1; invoice_details.Border = Rectangle.LEFT_BORDER;
+        invoiceBody.AddCell(invoice_details);
+
+        invoice_details = new PdfPCell(new Phrase(new Paragraph(r.item_description + "\r\n\r\n" + r.item_elaboration, times_unbold)));
+        invoice_details.Colspan = 7; invoice_details.HorizontalAlignment = 0; invoice_details.Border = Rectangle.NO_BORDER;
+        invoiceBody.AddCell(invoice_details);
+
+        invoice_details = new PdfPCell(new Phrase(new Paragraph(r.item_qty > 0 ? r.item_qty.ToString("") : "", times_unbold)));
+        invoice_details.Colspan = 1; invoice_details.HorizontalAlignment = 1; invoice_details.Border = Rectangle.NO_BORDER;
+        invoiceBody.AddCell(invoice_details);
+
+
+        invoice_details = new PdfPCell(new Phrase(new Paragraph(r.item_price > 0 ? r.item_price.ToString("N2") : "", times_unbold)));
+        invoice_details.Colspan = 2; invoice_details.HorizontalAlignment = 1; invoice_details.Border = Rectangle.NO_BORDER;
+        invoiceBody.AddCell(invoice_details);
+
+        var ttlExcGst = r.item_price * r.item_qty;
+        invoice_details = new PdfPCell(new Phrase(new Paragraph(ttlExcGst > 0 ? (ttlExcGst).ToString("N2") : "", times_unbold)));
+        invoice_details.Colspan = 2; invoice_details.HorizontalAlignment = 1; invoice_details.Border = Rectangle.NO_BORDER;
+        invoiceBody.AddCell(invoice_details);
+
+        var ttlGst = r.item_price * r.item_qty * 0.06;
+        invoice_details = new PdfPCell(new Phrase(new Paragraph(ttlGst > 0 ? (ttlGst).ToString("N2") : "", times_unbold)));
+        invoice_details.Colspan = 2; invoice_details.HorizontalAlignment = 1; invoice_details.Border = Rectangle.NO_BORDER;
+        invoiceBody.AddCell(invoice_details);
+
+        var ttlInlcGst = r.item_price * 1.06 * r.item_qty;
+        invoice_details = new PdfPCell(new Phrase(new Paragraph(ttlInlcGst > 0 ? (ttlInlcGst).ToString("N2") : "", times_unbold)));
+        invoice_details.Colspan = 2; invoice_details.HorizontalAlignment = 1; invoice_details.Border = Rectangle.NO_BORDER;
+        invoiceBody.AddCell(invoice_details);
+
+        invoice_details = new PdfPCell(new Phrase(new Paragraph(r.tax_code, times_unbold)));
+        invoice_details.Colspan = 1; invoice_details.HorizontalAlignment = 1; invoice_details.Border = Rectangle.RIGHT_BORDER;
+        invoiceBody.AddCell(invoice_details);
+    }
+    PdfPCell englishTotal = new PdfPCell(new Phrase(new Paragraph("", headerFont)));
+    englishTotal.Colspan = 1;
+    englishTotal.Border = Rectangle.LEFT_BORDER | Rectangle.BOTTOM_BORDER;
+    invoiceBody.AddCell(englishTotal);
+
+    englishTotal = new PdfPCell(new Phrase(new Paragraph("\r\n\r\n\r\n\r\nRinggit Malaysia:" + n2e.NumberToCurrencyText(Convert.ToDecimal(totalInclGST)) + "\r\n\r\n", headerFont)));
+    englishTotal.Colspan = 17;
+    englishTotal.Border = Rectangle.BOTTOM_BORDER | Rectangle.RIGHT_BORDER;
+    invoiceBody.AddCell(englishTotal);
+
+    space = new PdfPCell(new Phrase(new Paragraph("\r\n\r\n\r\n\r\n", headerFont)));
+    space.Colspan = 18;
+    space.Border = Rectangle.NO_BORDER;
+    invoiceBody.AddCell(space);
+
+    PdfPCell total_details = new PdfPCell(new Phrase(new Paragraph("GST Summary", times)));
+    total_details.Colspan = 2; total_details.HorizontalAlignment = 0; total_details.Border = Rectangle.LEFT_BORDER |Rectangle.TOP_BORDER;
+    footerTable.AddCell(total_details);
+    //dummyTotalHeight+= total_details.Height;
+
+
+    total_details = new PdfPCell(new Phrase(new Paragraph("Amount", times)));
+    total_details.Colspan = 2; total_details.HorizontalAlignment = 0; total_details.Border = Rectangle.TOP_BORDER;
+    footerTable.AddCell(total_details);
+
+    total_details = new PdfPCell(new Phrase(new Paragraph("GST Amount", times)));
+    total_details.Colspan = 2; total_details.HorizontalAlignment = 0; total_details.Border = Rectangle.TOP_BORDER | Rectangle.RIGHT_BORDER;
+    footerTable.AddCell(total_details);
+
+    space = new PdfPCell(new Phrase(new Paragraph("", times)));
+    space.Colspan = 1;space.Border = Rectangle.NO_BORDER;
+    footerTable.AddCell(space);
+
+    total_details = new PdfPCell(new Phrase(new Paragraph("", times)));
+    total_details.Colspan = 3; total_details.HorizontalAlignment = 0; total_details.Border = Rectangle.LEFT_BORDER |Rectangle.TOP_BORDER;
+    footerTable.AddCell(total_details);
+
+    total_details = new PdfPCell(new Phrase(new Paragraph("MYR", times)));
+    total_details.Colspan = 2; total_details.HorizontalAlignment = 2; total_details.Border = Rectangle.TOP_BORDER | Rectangle.RIGHT_BORDER;
+    footerTable.AddCell(total_details);
+
+    //Total Details**************************************************************************************************************
+    total_details = new PdfPCell(new Phrase(new Paragraph("SR @ 6%", times)));
+    total_details.Colspan = 2; total_details.HorizontalAlignment = 0; total_details.Border = Rectangle.LEFT_BORDER | Rectangle.BOTTOM_BORDER;
+    footerTable.AddCell(total_details);
+    //dummyTotalHeight += total_details.Height;
+
+    total_details = new PdfPCell(new Phrase(new Paragraph(totalExclGST.ToString("N2"), times)));
+    total_details.Colspan = 2; total_details.HorizontalAlignment = 0; total_details.Border = Rectangle.BOTTOM_BORDER;
+    footerTable.AddCell(total_details);
+
+    total_details = new PdfPCell(new Phrase(new Paragraph(totalGST.ToString("N2"), times)));
+    total_details.Colspan = 2; total_details.HorizontalAlignment = 0; total_details.Border = Rectangle.BOTTOM_BORDER | Rectangle.RIGHT_BORDER;
+    footerTable.AddCell(total_details);
+
+    space = new PdfPCell(new Phrase(new Paragraph("", times)));
+    space.Colspan = 1; space.Border = Rectangle.NO_BORDER;
+    footerTable.AddCell(space);
+
+    total_details = new PdfPCell(new Phrase(new Paragraph("TOTAL EXCL GST\r\nADD GST @ 6%", times)));
+    total_details.Colspan = 3; total_details.HorizontalAlignment = 0; total_details.Border = Rectangle.LEFT_BORDER | Rectangle.BOTTOM_BORDER;
+    footerTable.AddCell(total_details);
+
+    total_details = new PdfPCell(new Phrase(new Paragraph(totalExclGST.ToString("N2") +"\r\n"+ totalGST.ToString("N2"), times)));
+    total_details.Colspan = 2; total_details.HorizontalAlignment = 2; total_details.Border = Rectangle.BOTTOM_BORDER | Rectangle.RIGHT_BORDER;
+    footerTable.AddCell(total_details);
+
+    //Total Details Line 2**************************************************************************************************************
+    space = new PdfPCell(new Phrase(new Paragraph("", times)));
+    space.Colspan = 7; space.Border = Rectangle.NO_BORDER;
+    footerTable.AddCell(space);
+    //dummyTotalHeight += total_details.Height;
+
+    total_details = new PdfPCell(new Phrase(new Paragraph("TOTAL PAYABLE INCL", times)));
+    total_details.Colspan = 3; total_details.HorizontalAlignment = 0; total_details.Border = Rectangle.LEFT_BORDER | Rectangle.BOTTOM_BORDER;
+    footerTable.AddCell(total_details);
+
+    total_details = new PdfPCell(new Phrase(new Paragraph(totalInclGST.ToString("N2"), times)));
+    total_details.Colspan = 2; total_details.HorizontalAlignment = 2; total_details.Border = Rectangle.BOTTOM_BORDER | Rectangle.RIGHT_BORDER;
+    footerTable.AddCell(total_details);
+
+    space = new PdfPCell(new Phrase(new Paragraph("\r\n\r\n\r\n\r\n", times)));
+    space.Colspan = 12; space.Border = Rectangle.NO_BORDER;
+    footerTable.AddCell(space);
+    //dummyTotalHeight += total_details.Height;
+    PdfPCell termsAndCondition = new PdfPCell(new Phrase(new Paragraph("Terms & Conditions\r\n\r\n1) Delivery: Ex-Stock estimated delivery time 1-2 weeks upon receiving Purchase Order, otherwise 2-4 weeks.\r\n\r\n2) 50% advance payment upon quotation approval.\r\n\r\n3) Price: Price does not include of delivery outside of Klang Valley\r\n\r\n4) Validity: 14 days, Price is subject to change without prior notice.\r\n\r\n5) Warranty: All hardware carry manufacturer's standard warranty.\r\n\r\n6) Cancellation: Any cancellation of orders after confirmation is subject to 15 % of the purchased order value.", times_unbold)));
+    termsAndCondition.Colspan = 12; termsAndCondition.HorizontalAlignment = 0;
+    footerTable.AddCell(termsAndCondition);
+
+    termsAndCondition = new PdfPCell(new Phrase(new Paragraph("\r\n\r\n\r\n\r\n*This is a computer generated quotation. No signature required.*", times)));
+    termsAndCondition.Colspan = 12; termsAndCondition.HorizontalAlignment = 1; termsAndCondition.Border = Rectangle.NO_BORDER;
+    footerTable.AddCell(termsAndCondition);
+    //dummyTotalHeight += total_details.Height;
+
+    /*PdfPCell dummyCell = new PdfPCell(new Phrase(new Paragraph("", times)));
+    dummyCell.Colspan = 12; dummyCell.HorizontalAlignment = 0;dummyCell.Border=Rectangle.NO_BORDER;
+    dummyCell.MinimumHeight = 195.0f;
+    dummy.AddCell(dummyCell);*/
+
+
+    document.Add(table);
+    //document.Add(dummy);
+    document.Add(invoiceBody);
+    document.Add(footerTable);
+    footerTable.TotalWidth = 590;
+    // footerTable.WriteSelectedRows(0, -1,document.Left, footerTable.TotalHeight + document.Bottom + 10,writer.DirectContent);
+    document.Close();
+    // Close the writer instance
+    writer.Close();
+
+
+    Response.ContentType = "pdf/application";
+    Response.AddHeader("content-disposition",
+    "attachment;filename="+Model.quotation_no+".pdf");
+
+    Response.Write("GENERATED!");
+}

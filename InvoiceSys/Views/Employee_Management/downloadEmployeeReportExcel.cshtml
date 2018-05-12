@@ -1,0 +1,386 @@
+﻿@using System.Runtime.InteropServices;
+@using Excel = Microsoft.Office.Interop.Excel;
+@model  MrAng_Invoice.Models.AccountInfo
+@RenderPage("../HeaderFile.cshtml")
+@{
+    Excel.Application xlApp = new Microsoft.Office.Interop.Excel.Application();
+
+    if (xlApp == null)
+    {
+        Response.Write("Excel is not properly installed!!");
+        Response.End();
+        return;
+    }
+
+    Database db = Database.Open("InvoiceSysDBContext");
+
+    var result = db.Query("SELECT * FROM Employee_WorkSheet WHERE employee_id=@0 AND FORMAT(working_date,'MM/yyyy')=@1 AND approval_status !='Amended'", Model.employee_id, ViewBag.dateOfReport);
+
+    int ttlBeforeWorkingHr = 0, ttlWorkingHr = 0, ttlAfterWorkingHr = 0;
+    int ttlBDBeforeWorkingHr = 0, ttlBDWorkingHr = 0, ttlBDAfterWorkingHr = 0;
+    int ttlNBDBeforeWorkingHr = 0, ttlNBDWorkingHr = 0, ttlNBDAfterWorkingHr = 0;
+
+    var y = 0;
+    Excel.Workbook xlWorkBook;
+    Excel.Worksheet xlWorkSheet;
+    object misValue = System.Reflection.Missing.Value;
+
+    xlWorkBook = xlApp.Workbooks.Add(misValue);
+    xlWorkSheet = (Excel.Worksheet)xlWorkBook.Worksheets.get_Item(1);
+
+    //Header Label
+    xlWorkSheet.get_Range("A" + (++y).ToString()).Font.Bold = true;
+    xlWorkSheet.Cells[y, 1] = "Company Name: ";
+    xlWorkSheet.get_Range("A" + (++y).ToString()).Font.Bold = true;
+    xlWorkSheet.Cells[y, 1] = "Company ID:";
+    xlWorkSheet.get_Range("A" + (++y).ToString()).Font.Bold = true;
+    xlWorkSheet.Cells[y, 1] = "Month:";
+
+
+    //Header Information
+    y = 0;
+    xlWorkSheet.Cells[++y, 2] = Model.user_full_name;
+    xlWorkSheet.get_Range("B" + y.ToString(), "C" + y.ToString()).Merge();
+    xlWorkSheet.get_Range("B" + y.ToString(), "C" + y.ToString()).HorizontalAlignment = 4;
+    xlWorkSheet.Cells[++y, 2] = Model.employee_id;
+    xlWorkSheet.get_Range("B" + y.ToString(), "C" + y.ToString()).Merge();
+    xlWorkSheet.get_Range("B" + y.ToString(), "C" + y.ToString()).HorizontalAlignment = 4;
+    xlWorkSheet.Cells[++y, 2] = ViewBag.dateOfReport;
+    xlWorkSheet.get_Range("B" + y.ToString(), "C" + y.ToString()).Merge();
+    xlWorkSheet.get_Range("B" + y.ToString(), "C" + y.ToString()).HorizontalAlignment = 4;
+
+    //Part A Labels
+    y = y + 1;
+    xlWorkSheet.Cells[(++y).ToString(), 1] = "A. Working Attendance (All Record)";
+    xlWorkSheet.get_Range("A" + y.ToString(), "C" + y.ToString()).Merge();
+    xlWorkSheet.get_Range("A" + y.ToString(), "C" + y.ToString()).HorizontalAlignment = 2;
+
+    xlWorkSheet.Cells[(++y).ToString(), 1] = "No:";
+    xlWorkSheet.get_Range("A" + y.ToString(), "A" + (y + 1).ToString()).Merge();
+
+
+    xlWorkSheet.Cells[(y).ToString(), 2] = "Ticket ID:";
+    xlWorkSheet.get_Range("B" + y.ToString(), "B" + (y + 1).ToString()).Merge();
+
+    xlWorkSheet.Cells[(y).ToString(), 3] = "Client Served:";
+    xlWorkSheet.get_Range("C" + y.ToString(), "C" + (y + 1).ToString()).Merge();
+
+    xlWorkSheet.Cells[(y).ToString(), 4] = "Work Date: ";
+    xlWorkSheet.get_Range("D" + y.ToString(), "F" + y.ToString()).Merge();
+    xlWorkSheet.get_Range("D" + y.ToString(), "F" + y.ToString()).HorizontalAlignment = 3;
+    xlWorkSheet.Cells[(y + 1).ToString(), 4] = "Day:";
+    xlWorkSheet.Cells[(y + 1).ToString(), 5] = "Type:";
+    xlWorkSheet.Cells[(y + 1).ToString(), 6] = "Date:";
+
+    xlWorkSheet.Cells[(y).ToString(), 4] = "Work Date: ";
+    xlWorkSheet.get_Range("D" + y.ToString(), "F" + y.ToString()).Merge();
+    xlWorkSheet.get_Range("D" + y.ToString(), "F" + y.ToString()).HorizontalAlignment = 3;
+    xlWorkSheet.Cells[(y + 1).ToString(), 4] = "Day:";
+    xlWorkSheet.Cells[(y + 1).ToString(), 5] = "Type:";
+    xlWorkSheet.Cells[(y + 1).ToString(), 6] = "Date:";
+
+    xlWorkSheet.Cells[(y).ToString(), 7] = "Work Date: ";
+    xlWorkSheet.get_Range("G" + y.ToString(), "I" + y.ToString()).Merge();
+    xlWorkSheet.get_Range("G" + y.ToString(), "I" + y.ToString()).HorizontalAlignment = 3;
+    xlWorkSheet.Cells[(y + 1).ToString(), 7] = "Time In:";
+    xlWorkSheet.Cells[(y + 1).ToString(), 8] = "Time Out:";
+    xlWorkSheet.Cells[(y + 1).ToString(), 9] = "Total Hour:";
+
+    xlWorkSheet.Cells[(y).ToString(), 10] = "Break Down: ";
+    xlWorkSheet.get_Range("J" + y.ToString(), "L" + y.ToString()).Merge();
+    xlWorkSheet.get_Range("J" + y.ToString(), "L" + y.ToString()).HorizontalAlignment = 3;
+    xlWorkSheet.Cells[(y + 1).ToString(), 10] = "0000-0900hrs:";
+    xlWorkSheet.Cells[(y + 1).ToString(), 11] = "0900-1700hrs:";
+    xlWorkSheet.Cells[(y + 1).ToString(), 12] = "1700- 2359hrs:";
+
+    xlWorkSheet.Cells[(y).ToString(), 13] = "Status:";
+    xlWorkSheet.get_Range("M" + y.ToString(), "M" + (y + 1).ToString()).Merge();
+    xlWorkSheet.get_Range("A" + (y - 1).ToString(), "M" + (y + 1).ToString()).Font.Bold = true;
+
+    //Part A Details
+    var counter = 0;
+    y = y + 1;
+    foreach (var r in result)
+    {
+        var x = 1;
+        ++y;
+        xlWorkSheet.Cells[(y).ToString(), x++] = (++counter).ToString();
+        xlWorkSheet.Cells[(y).ToString(), x++] = r.ticket_id;
+        xlWorkSheet.Cells[(y).ToString(), x++] = r.client_served;
+        xlWorkSheet.Cells[(y).ToString(), x++] = r.working_date.ToString("dddd");
+        xlWorkSheet.Cells[(y).ToString(), x++] = r.working_date_type;
+        xlWorkSheet.Cells[(y).ToString(), x++] = r.working_date.ToString("dd/MM/yyyy");
+        xlWorkSheet.Cells[(y).ToString(), x++] = r.time_in.ToString("HH:mm");
+        xlWorkSheet.Cells[(y).ToString(), x++] = r.time_out.ToString("HH:mm");
+        xlWorkSheet.Cells[(y).ToString(), x++] = r.total_working_hour.ToString();
+
+        dynamic beforeWorkingHour = (TimeSpan.Parse("09:00") - TimeSpan.Parse(r.time_in.ToString("HH:mm"))).Hours;
+        beforeWorkingHour = Convert.ToInt32(beforeWorkingHour.ToString()) < 0 ? "0" : beforeWorkingHour.ToString();
+        dynamic afterWorkingHour = (TimeSpan.Parse(r.time_out.ToString("HH:mm")) - TimeSpan.Parse("17:00")).Hours;
+        afterWorkingHour = Convert.ToInt32(afterWorkingHour.ToString()) < 0 ? "0" : afterWorkingHour.ToString();
+        dynamic workingHour = Convert.ToInt32(r.total_working_hour) - Convert.ToInt32(beforeWorkingHour) - Convert.ToInt32(afterWorkingHour);
+        workingHour = workingHour < 0 ? "0" : workingHour.ToString();
+
+        ttlBeforeWorkingHr = ttlBeforeWorkingHr + Convert.ToInt32(beforeWorkingHour);
+        ttlAfterWorkingHr = ttlAfterWorkingHr + Convert.ToInt32(afterWorkingHour);
+        ttlWorkingHr = ttlWorkingHr + Convert.ToInt32(workingHour);
+
+        xlWorkSheet.Cells[(y).ToString(), x++] = beforeWorkingHour;
+        xlWorkSheet.Cells[(y).ToString(), x++] = workingHour.ToString();
+        xlWorkSheet.Cells[(y).ToString(), x++] = afterWorkingHour.ToString();
+        xlWorkSheet.Cells[(y).ToString(), x++] = r.approval_status.ToString();
+    }
+    xlWorkSheet.Cells[(++y).ToString(), 8] = "Total";
+    xlWorkSheet.Cells[(y).ToString(), 9] = (ttlBeforeWorkingHr + ttlWorkingHr + ttlAfterWorkingHr).ToString();
+    xlWorkSheet.Cells[(y).ToString(), 10] = ttlBeforeWorkingHr.ToString();
+    xlWorkSheet.Cells[(y).ToString(), 11] = ttlWorkingHr.ToString();
+    xlWorkSheet.Cells[(y).ToString(), 12] = ttlAfterWorkingHr.ToString();
+
+    //Part B Labels
+    y = y + 1;
+    xlWorkSheet.Cells[(++y).ToString(), 1] = "B. Normal Bussiness Day";
+    xlWorkSheet.get_Range("A" + y.ToString(), "C" + y.ToString()).Merge();
+    xlWorkSheet.get_Range("A" + y.ToString(), "C" + y.ToString()).HorizontalAlignment = 2;
+
+    xlWorkSheet.Cells[(++y).ToString(), 1] = "No:";
+    xlWorkSheet.get_Range("A" + y.ToString(), "A" + (y + 1).ToString()).Merge();
+
+
+    xlWorkSheet.Cells[(y).ToString(), 2] = "Ticket ID:";
+    xlWorkSheet.get_Range("B" + y.ToString(), "B" + (y + 1).ToString()).Merge();
+
+    xlWorkSheet.Cells[(y).ToString(), 3] = "Client Served:";
+    xlWorkSheet.get_Range("C" + y.ToString(), "C" + (y + 1).ToString()).Merge();
+
+    xlWorkSheet.Cells[(y).ToString(), 4] = "Work Date: ";
+    xlWorkSheet.get_Range("D" + y.ToString(), "F" + y.ToString()).Merge();
+    xlWorkSheet.get_Range("D" + y.ToString(), "F" + y.ToString()).HorizontalAlignment = 3;
+    xlWorkSheet.Cells[(y + 1).ToString(), 4] = "Day:";
+    xlWorkSheet.Cells[(y + 1).ToString(), 5] = "Type:";
+    xlWorkSheet.Cells[(y + 1).ToString(), 6] = "Date:";
+
+    xlWorkSheet.Cells[(y).ToString(), 4] = "Work Date: ";
+    xlWorkSheet.get_Range("D" + y.ToString(), "F" + y.ToString()).Merge();
+    xlWorkSheet.get_Range("D" + y.ToString(), "F" + y.ToString()).HorizontalAlignment = 3;
+    xlWorkSheet.Cells[(y + 1).ToString(), 4] = "Day:";
+    xlWorkSheet.Cells[(y + 1).ToString(), 5] = "Type:";
+    xlWorkSheet.Cells[(y + 1).ToString(), 6] = "Date:";
+
+    xlWorkSheet.Cells[(y).ToString(), 7] = "Work Date: ";
+    xlWorkSheet.get_Range("G" + y.ToString(), "I" + y.ToString()).Merge();
+    xlWorkSheet.get_Range("G" + y.ToString(), "I" + y.ToString()).HorizontalAlignment = 3;
+    xlWorkSheet.Cells[(y + 1).ToString(), 7] = "Time In:";
+    xlWorkSheet.Cells[(y + 1).ToString(), 8] = "Time Out:";
+    xlWorkSheet.Cells[(y + 1).ToString(), 9] = "Total Hour:";
+
+    xlWorkSheet.Cells[(y).ToString(), 10] = "Break Down: ";
+    xlWorkSheet.get_Range("J" + y.ToString(), "L" + y.ToString()).Merge();
+    xlWorkSheet.get_Range("J" + y.ToString(), "L" + y.ToString()).HorizontalAlignment = 3;
+    xlWorkSheet.Cells[(y + 1).ToString(), 10] = "0000-0900hrs:";
+    xlWorkSheet.Cells[(y + 1).ToString(), 11] = "0900-1700hrs:";
+    xlWorkSheet.Cells[(y + 1).ToString(), 12] = "1700- 2359hrs:";
+
+    xlWorkSheet.Cells[(y).ToString(), 13] = "Status:";
+    xlWorkSheet.get_Range("M" + y.ToString(), "M" + (y + 1).ToString()).Merge();
+    xlWorkSheet.get_Range("A" + (y - 1).ToString(), "M" + (y + 1).ToString()).Font.Bold = true;
+
+    //Part B Details
+    counter = 0;
+    y = y + 1;
+    foreach (var r in result)
+    {
+        if (r.working_date_type == "BD")
+        {
+            var x = 1;
+            ++y;
+            xlWorkSheet.Cells[(y).ToString(), x++] = (++counter).ToString();
+            xlWorkSheet.Cells[(y).ToString(), x++] = r.ticket_id;
+            xlWorkSheet.Cells[(y).ToString(), x++] = r.client_served;
+            xlWorkSheet.Cells[(y).ToString(), x++] = r.working_date.ToString("dddd");
+            xlWorkSheet.Cells[(y).ToString(), x++] = r.working_date_type;
+            xlWorkSheet.Cells[(y).ToString(), x++] = r.working_date.ToString("dd/MM/yyyy");
+            xlWorkSheet.Cells[(y).ToString(), x++] = r.time_in.ToString("HH:mm");
+            xlWorkSheet.Cells[(y).ToString(), x++] = r.time_out.ToString("HH:mm");
+            xlWorkSheet.Cells[(y).ToString(), x++] = r.total_working_hour.ToString();
+
+            dynamic beforeWorkingHour = (TimeSpan.Parse("09:00") - TimeSpan.Parse(r.time_in.ToString("HH:mm"))).Hours;
+            beforeWorkingHour = Convert.ToInt32(beforeWorkingHour.ToString()) < 0 ? "0" : beforeWorkingHour.ToString();
+            dynamic afterWorkingHour = (TimeSpan.Parse(r.time_out.ToString("HH:mm")) - TimeSpan.Parse("17:00")).Hours;
+            afterWorkingHour = Convert.ToInt32(afterWorkingHour.ToString()) < 0 ? "0" : afterWorkingHour.ToString();
+            dynamic workingHour = Convert.ToInt32(r.total_working_hour) - Convert.ToInt32(beforeWorkingHour) - Convert.ToInt32(afterWorkingHour);
+            workingHour = workingHour < 0 ? "0" : workingHour.ToString();
+
+
+            ttlBeforeWorkingHr = ttlBeforeWorkingHr + Convert.ToInt32(beforeWorkingHour);
+            ttlAfterWorkingHr = ttlAfterWorkingHr + Convert.ToInt32(afterWorkingHour);
+            ttlWorkingHr = ttlWorkingHr + Convert.ToInt32(workingHour);
+
+            ttlBDBeforeWorkingHr = ttlBDBeforeWorkingHr + Convert.ToInt32(beforeWorkingHour);
+            ttlBDAfterWorkingHr = ttlBDAfterWorkingHr + Convert.ToInt32(afterWorkingHour);
+            ttlBDWorkingHr = ttlBDWorkingHr + Convert.ToInt32(workingHour);
+
+            xlWorkSheet.Cells[(y).ToString(), x++] = beforeWorkingHour;
+            xlWorkSheet.Cells[(y).ToString(), x++] = workingHour.ToString();
+            xlWorkSheet.Cells[(y).ToString(), x++] = afterWorkingHour.ToString();
+            xlWorkSheet.Cells[(y).ToString(), x++] = r.approval_status.ToString();
+        }
+    }
+    xlWorkSheet.Cells[(++y).ToString(), 8] = "Total";
+    xlWorkSheet.Cells[(y).ToString(), 9] = (ttlBDBeforeWorkingHr + ttlBDWorkingHr + ttlBDAfterWorkingHr).ToString();
+    xlWorkSheet.Cells[(y).ToString(), 10] = ttlBDBeforeWorkingHr.ToString();
+    xlWorkSheet.Cells[(y).ToString(), 11] = ttlBDWorkingHr.ToString();
+    xlWorkSheet.Cells[(y).ToString(), 12] = ttlBDAfterWorkingHr.ToString();
+
+
+
+    //Part C Labels
+    y = y + 1;
+    xlWorkSheet.Cells[(++y).ToString(), 1] = "C. None Bussiness Day (Public Holiday)";
+    xlWorkSheet.get_Range("A" + y.ToString(), "C" + y.ToString()).Merge();
+    xlWorkSheet.get_Range("A" + y.ToString(), "C" + y.ToString()).HorizontalAlignment = 2;
+
+    xlWorkSheet.Cells[(++y).ToString(), 1] = "No:";
+    xlWorkSheet.get_Range("A" + y.ToString(), "A" + (y + 1).ToString()).Merge();
+
+
+    xlWorkSheet.Cells[(y).ToString(), 2] = "Ticket ID:";
+    xlWorkSheet.get_Range("B" + y.ToString(), "B" + (y + 1).ToString()).Merge();
+
+    xlWorkSheet.Cells[(y).ToString(), 3] = "Client Served:";
+    xlWorkSheet.get_Range("C" + y.ToString(), "C" + (y + 1).ToString()).Merge();
+
+    xlWorkSheet.Cells[(y).ToString(), 4] = "Work Date: ";
+    xlWorkSheet.get_Range("D" + y.ToString(), "F" + y.ToString()).Merge();
+    xlWorkSheet.get_Range("D" + y.ToString(), "F" + y.ToString()).HorizontalAlignment = 3;
+    xlWorkSheet.Cells[(y + 1).ToString(), 4] = "Day:";
+    xlWorkSheet.Cells[(y + 1).ToString(), 5] = "Type:";
+    xlWorkSheet.Cells[(y + 1).ToString(), 6] = "Date:";
+
+    xlWorkSheet.Cells[(y).ToString(), 4] = "Work Date: ";
+    xlWorkSheet.get_Range("D" + y.ToString(), "F" + y.ToString()).Merge();
+    xlWorkSheet.get_Range("D" + y.ToString(), "F" + y.ToString()).HorizontalAlignment = 3;
+    xlWorkSheet.Cells[(y + 1).ToString(), 4] = "Day:";
+    xlWorkSheet.Cells[(y + 1).ToString(), 5] = "Type:";
+    xlWorkSheet.Cells[(y + 1).ToString(), 6] = "Date:";
+
+    xlWorkSheet.Cells[(y).ToString(), 7] = "Work Date: ";
+    xlWorkSheet.get_Range("G" + y.ToString(), "I" + y.ToString()).Merge();
+    xlWorkSheet.get_Range("G" + y.ToString(), "I" + y.ToString()).HorizontalAlignment = 3;
+    xlWorkSheet.Cells[(y + 1).ToString(), 7] = "Time In:";
+    xlWorkSheet.Cells[(y + 1).ToString(), 8] = "Time Out:";
+    xlWorkSheet.Cells[(y + 1).ToString(), 9] = "Total Hour:";
+
+    xlWorkSheet.Cells[(y).ToString(), 10] = "Break Down: ";
+    xlWorkSheet.get_Range("J" + y.ToString(), "L" + y.ToString()).Merge();
+    xlWorkSheet.get_Range("J" + y.ToString(), "L" + y.ToString()).HorizontalAlignment = 3;
+    xlWorkSheet.Cells[(y + 1).ToString(), 10] = "0000-0900hrs:";
+    xlWorkSheet.Cells[(y + 1).ToString(), 11] = "0900-1700hrs:";
+    xlWorkSheet.Cells[(y + 1).ToString(), 12] = "1700- 2359hrs:";
+
+    xlWorkSheet.Cells[(y).ToString(), 13] = "Status:";
+    xlWorkSheet.get_Range("M" + y.ToString(), "M" + (y + 1).ToString()).Merge();
+    xlWorkSheet.get_Range("A" + (y - 1).ToString(), "M" + (y + 1).ToString()).Font.Bold = true;
+
+    //Part B Details
+    counter = 0;
+    y = y + 1;
+    foreach (var r in result)
+    {
+        if (r.working_date_type == "NBD")
+        {
+            var x = 1;
+            ++y;
+            xlWorkSheet.Cells[(y).ToString(), x++] = (++counter).ToString();
+            xlWorkSheet.Cells[(y).ToString(), x++] = r.ticket_id;
+            xlWorkSheet.Cells[(y).ToString(), x++] = r.client_served;
+            xlWorkSheet.Cells[(y).ToString(), x++] = r.working_date.ToString("dddd");
+            xlWorkSheet.Cells[(y).ToString(), x++] = r.working_date_type;
+            xlWorkSheet.Cells[(y).ToString(), x++] = r.working_date.ToString("dd/MM/yyyy");
+            xlWorkSheet.Cells[(y).ToString(), x++] = r.time_in.ToString("HH:mm");
+            xlWorkSheet.Cells[(y).ToString(), x++] = r.time_out.ToString("HH:mm");
+            xlWorkSheet.Cells[(y).ToString(), x++] = r.total_working_hour.ToString();
+
+            dynamic beforeWorkingHour = (TimeSpan.Parse("09:00") - TimeSpan.Parse(r.time_in.ToString("HH:mm"))).Hours;
+            beforeWorkingHour = Convert.ToInt32(beforeWorkingHour.ToString()) < 0 ? "0" : beforeWorkingHour.ToString();
+            dynamic afterWorkingHour = (TimeSpan.Parse(r.time_out.ToString("HH:mm")) - TimeSpan.Parse("17:00")).Hours;
+            afterWorkingHour = Convert.ToInt32(afterWorkingHour.ToString()) < 0 ? "0" : afterWorkingHour.ToString();
+            dynamic workingHour = Convert.ToInt32(r.total_working_hour) - Convert.ToInt32(beforeWorkingHour) - Convert.ToInt32(afterWorkingHour);
+            workingHour = workingHour < 0 ? "0" : workingHour.ToString();
+
+
+
+            ttlBeforeWorkingHr = ttlBeforeWorkingHr + Convert.ToInt32(beforeWorkingHour);
+            ttlAfterWorkingHr = ttlAfterWorkingHr + Convert.ToInt32(afterWorkingHour);
+            ttlWorkingHr = ttlWorkingHr + Convert.ToInt32(workingHour);
+
+
+            ttlNBDBeforeWorkingHr = ttlNBDBeforeWorkingHr + Convert.ToInt32(beforeWorkingHour);
+            ttlNBDAfterWorkingHr = ttlNBDAfterWorkingHr + Convert.ToInt32(afterWorkingHour);
+            ttlNBDWorkingHr = ttlNBDWorkingHr + Convert.ToInt32(workingHour);
+
+            xlWorkSheet.Cells[(y).ToString(), x++] = beforeWorkingHour;
+            xlWorkSheet.Cells[(y).ToString(), x++] = workingHour.ToString();
+            xlWorkSheet.Cells[(y).ToString(), x++] = afterWorkingHour.ToString();
+            xlWorkSheet.Cells[(y).ToString(), x++] = r.approval_status.ToString();
+        }
+    }
+    y = y + 2;
+    xlWorkSheet.Cells[(++y).ToString(), 8] = "Total";
+    xlWorkSheet.Cells[(y).ToString(), 9] = (ttlNBDBeforeWorkingHr + ttlNBDWorkingHr + ttlNBDAfterWorkingHr).ToString();
+    xlWorkSheet.Cells[(y).ToString(), 10] = ttlNBDBeforeWorkingHr.ToString();
+    xlWorkSheet.Cells[(y).ToString(), 11] = ttlNBDWorkingHr.ToString();
+    xlWorkSheet.Cells[(y).ToString(), 12] = ttlNBDAfterWorkingHr.ToString();
+
+    xlWorkSheet.Cells[(++y).ToString(), 1] = "D. Overtime Summary";
+    xlWorkSheet.get_Range("A" + y.ToString(), "C" + y.ToString()).Merge();
+    xlWorkSheet.get_Range("A" + y.ToString(), "C" + y.ToString()).HorizontalAlignment = 2;
+
+    xlWorkSheet.Cells[(++y).ToString(), 1] = "Business Day (BD)";
+    xlWorkSheet.get_Range("A" + y.ToString(), "C" + y.ToString()).Merge();
+    xlWorkSheet.Cells[(y).ToString(), 7] = "Non Business Day (NBD)";
+    xlWorkSheet.get_Range("G" + y.ToString(), "I" + y.ToString()).Merge();
+
+    xlWorkSheet.get_Range("A" + (y - 1).ToString(), "I" + y.ToString()).Font.Bold = true;
+
+    xlWorkSheet.Cells[(++y).ToString(), 1] = "Total Midnight Overtime (0000-0900hrs)";
+    xlWorkSheet.Cells[(y).ToString(), 5] = ttlBDBeforeWorkingHr.ToString();
+    xlWorkSheet.get_Range("A" + y.ToString(), "C" + y.ToString()).Merge();
+    xlWorkSheet.Cells[(y).ToString(), 7] = "Total Midnight Overtime (0000-0900hrs)";
+    xlWorkSheet.Cells[(y).ToString(), 11] = ttlNBDBeforeWorkingHr.ToString();
+    xlWorkSheet.get_Range("G" + y.ToString(), "I" + y.ToString()).Merge();
+
+    xlWorkSheet.Cells[(++y).ToString(), 1] = "Total Normal Hour (0900-1700hrs)";
+    xlWorkSheet.Cells[(y).ToString(), 5] = ttlBDWorkingHr.ToString();
+    xlWorkSheet.get_Range("A" + y.ToString(), "C" + y.ToString()).Merge();
+    xlWorkSheet.Cells[(y).ToString(), 11] = ttlNBDWorkingHr.ToString();
+    xlWorkSheet.Cells[(y).ToString(), 7] = "Total Normal Hour (0900-1700hrs)";
+    xlWorkSheet.get_Range("G" + y.ToString(), "I" + y.ToString()).Merge();
+
+    xlWorkSheet.Cells[(++y).ToString(), 1] = "Total Overtime (1700-2359hrs)";
+    xlWorkSheet.Cells[(y).ToString(), 5] = ttlBDAfterWorkingHr.ToString();
+    xlWorkSheet.get_Range("A" + y.ToString(), "C" + y.ToString()).Merge();
+    xlWorkSheet.Cells[(y).ToString(), 11] = ttlNBDAfterWorkingHr.ToString();
+    xlWorkSheet.get_Range("G" + y.ToString(), "I" + y.ToString()).Merge();
+
+
+    var filename = @"d:\" + Model.user_full_name + "_" + ViewBag.dateOfReport.Replace(@"/","_") + ".xls";
+
+    xlWorkBook.SaveAs(filename, Excel.XlFileFormat.xlWorkbookNormal, misValue, misValue, misValue, misValue, Excel.XlSaveAsAccessMode.xlExclusive, misValue, misValue, misValue, misValue, misValue);
+    xlWorkBook.Close(true, misValue, misValue);
+    xlApp.Quit();
+
+
+    Marshal.ReleaseComObject(xlWorkSheet);
+    Marshal.ReleaseComObject(xlWorkBook);
+    Marshal.ReleaseComObject(xlApp);
+
+    //Response.ContentType = "application/vnd.ms-excel";
+    Response.AddHeader("Content-Type", "application/vnd.ms-excel");
+    Response.AddHeader("content-disposition", "attachment;filename=" + Model.user_full_name + "_" + ViewBag.dateOfReport.Replace(@"/", "_") + ".xls");
+    Response.TransmitFile(filename);
+    Response.Flush();
+    System.IO.File.Delete(filename);
+    Response.End();
+
+
+}

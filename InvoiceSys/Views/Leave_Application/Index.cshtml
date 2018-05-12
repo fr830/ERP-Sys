@@ -1,0 +1,195 @@
+﻿@model IEnumerable<MrAng_Invoice.Models.Leave_Application>
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>List of Leave Applied</h2>
+
+<p>
+    @if (PermissionChecker.CheckUserPermission(Session["permission"].ToString(), "create", "10"))
+    {
+    @Html.ActionLink("Create New", "Create")
+    }
+</p>
+@using (Html.BeginForm("Index", "Leave_Application", FormMethod.Post))
+{
+    <p>
+        <b>Leave Applied From:</b>
+        <input type="text" placeholder="yyyy/mm/dd" id="leave_applied_from" name="leave_applied_from"/>
+        <b>Leave Applied To:</b>
+        <input type="text" placeholder="yyyy/mm/dd" id="leave_applied_to" name="leave_applied_to" />
+        <b>Status: </b>
+        <select id="status" name="status">
+            <option value="Approve">Approve</option>
+            <option value="Reject">Reject</option>
+            <option value="Pending">Pending</option>
+            <option value="Withdraw">Withdraw</option>
+        </select>
+        <input type="submit" value="Filter" />
+    </p>
+}
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.leave_applied_from)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.leave_applied_to)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.no_days_applied)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.status)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.type_of_leave)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.submitted_by)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.submitted_date)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.approved_by)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.approval_date)
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.leave_applied_from)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.leave_applied_to)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.no_days_applied)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.status)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.type_of_leave)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.submitted_by)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.submitted_date)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.approved_by)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.approval_date)
+        </td>
+        <td>
+            <div class="dropdown">
+                <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown"> Actions
+                    <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu">
+                  
+                    @if (PermissionChecker.CheckUserPermission(Session["permission"].ToString(), "view", "10"))
+                    {
+                    <li> @Html.ActionLink("Details", "Details", new { id = item.ID }) </li>
+                    }
+                    @if (item.status == "Pending")
+                    {
+                        if (PermissionChecker.CheckUserPermission(Session["permission"].ToString(), "approve", "10"))
+                        {
+                       <li>@Html.ActionLink("Approve", "ApproveLeave", new { id = item.ID })</li>
+                       <li><a onclick="setValue('@item.ID')" data-toggle="modal" data-target="#RejectLeaveModal">Reject</a></li>
+                        }
+                        if (PermissionChecker.CheckUserPermission(Session["permission"].ToString(), "edit", "10"))
+                        {
+                       <li>@Html.ActionLink("Edit", "Edit", new { id = item.ID })</li>
+                        }
+                        if (PermissionChecker.CheckUserPermission(Session["permission"].ToString(), "delete", "10"))
+                        {
+                       <li> @Html.ActionLink("Delete", "Delete", new { id = item.ID })</li>
+                        }
+                    }
+                    else if(item.status != "Withdraw")
+                    {
+                        if (PermissionChecker.CheckUserPermission(Session["permission"].ToString(), "create", "10"))
+                        {
+                       <li>@Html.ActionLink("Withdraw Leave", "WithdrawLeave", new { id = item.ID })</li>
+                        }
+                    }
+
+</ul>
+            </div>
+
+        </td>
+    </tr>
+}
+
+</table>
+<div class="modal fade" id="RejectLeaveModal" role="dialog">
+    <div class="modal-dialog">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Modal Header</h4>
+            </div>
+            <div class="modal-body">
+                <form method="post" id="RejectLeave" name="RejectLeave" action="\Leave_Application\RejectLeave">
+                    <div class="row">
+                        <div class="col-md-2">
+                            <label>Remarks:</label>
+                        </div>
+                        <div class="col-md-3">
+                            <textarea id="remarks" name="remarks" cols="40" rows="10" maxlength="500"></textarea>
+                        </div>
+                    </div>
+                    <input type="hidden" id="leave_id" name="leave_id" />
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button onclick="submitForm()" type="button" class="btn btn-primary" data-dismiss="modal">Submit</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+<script src="//code.jquery.com/jquery-2.1.1.min.js" type="text/javascript"></script>
+<script>
+    function setValue(leave_id) {
+        document.getElementById('leave_id').value = leave_id
+    }
+    function submitForm() {
+        document.getElementById('RejectLeave').submit();
+    }
+
+    $(document).ready(function () {
+
+        $("#leave_applied_from").datepicker({
+            "dateFormat": "yy-mm-dd",
+            changeMonth: true,
+            changeYear: true,
+            numberOfMonths: 1,
+            onClose: function (selectedDate) {
+                $("#leave_applied_to").datepicker("option", "minDate", selectedDate);
+            }
+        });
+        $("#leave_applied_to").datepicker({
+            "dateFormat": "yy-mm-dd",
+            changeMonth: true,
+            changeYear: true,
+            numberOfMonths: 1
+        });
+
+    });
+</script>

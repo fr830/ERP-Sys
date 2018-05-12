@@ -1,0 +1,116 @@
+﻿<!DOCTYPE html>
+@RenderPage("../HeaderFile.cshtml")
+
+
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@Session["company_name"].ToString() - ERP System</title>
+    @Styles.Render("~/Content/css")
+    @Scripts.Render("~/bundles/modernizr")
+    @Styles.Render("~/Content/fontawesome/font-awesome.css")
+    @Styles.Render("~/Content/fontawesome/font-awesome.min.css")
+</head>
+<body>
+    <script src="//code.jquery.com/jquery-2.1.1.min.js" type="text/javascript"></script>
+    <div class="row">
+
+        <nav class="navbar navbar-inverse navbar-fixed-top">
+            <p style=" float:right;color:white">Username: @Session["username"].ToString() | Company Name: @LoginFunctionView.getCompanyByUsername(Session["username"].ToString())</p>
+            <div class="container">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    @Html.ActionLink(Session["company_name"].ToString(), "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
+                </div>
+                <div class="navbar-collapse collapse">
+                    <ul class="nav navbar-nav">
+                        <li class="dropdown">
+                            <a title="" class="dropdown-toggle" data-toggle="dropdown">Customer Portal<b class="caret"></b></a>
+                            <ul class="dropdown-menu">
+                                @if (PermissionChecker.CheckUserPermission(Session["permission"].ToString(), "view", "3"))
+                                {
+                                    <li>@Html.ActionLink("Customer Task List", "Index", "Customer_WorkSheet")</li>
+                                }
+                            </ul>
+                        </li>
+                        <li class="dropdown">
+                            <a title="" class="dropdown-toggle" data-toggle="dropdown">Engineer Portal<b class="caret"></b></a>
+                            <ul class="dropdown-menu">
+                                @if (PermissionChecker.CheckUserPermission(Session["permission"].ToString(), "view", "2"))
+                                {
+                                    <li>@Html.ActionLink("Employee Task List", "Index", "Employee_WorkSheet")</li>
+                                }
+                            </ul>
+                        </li>
+                        <li class="dropdown">
+                            <a title="" class="dropdown-toggle" data-toggle="dropdown">ERP Portal<b class="caret"></b></a>
+                            <ul class="dropdown-menu">
+                                @if (PermissionChecker.CheckUserPermission(Session["permission"].ToString(), "view", "1"))
+                                {
+                                    <li>@Html.ActionLink("Customer Listing", "Index", "Customer_PrivateInfo")</li>
+                                }
+                                @if (PermissionChecker.CheckUserPermission(Session["permission"].ToString(), "view", "9"))
+                                {
+                                    <li>@Html.ActionLink("Employee Summary Worksheet", "Index", "Employee_Management")</li>
+                                }
+                                @if (PermissionChecker.CheckUserPermission(Session["permission"].ToString(), "view", "4"))
+                                {
+                                    <li>@Html.ActionLink("Quotation Management", "Index", "Quotation_Details")</li>
+                                }
+                                @if (PermissionChecker.CheckUserPermission(Session["permission"].ToString(), "view", "7"))
+                                {
+                                    <li>@Html.ActionLink("Invoice Management", "Index", "Invoice_Details")</li>
+                                }
+                            </ul>
+                        </li>
+                        <li class="dropdown">
+                            <a title="" class="dropdown-toggle" data-toggle="dropdown">Configuration Portal<b class="caret"></b></a>
+                            <ul class="dropdown-menu">
+                                <li>@Html.ActionLink("Change Password", "ChangePassword", "AccountInfoes")</li>
+                                @if (PermissionChecker.CheckUserPermission(Session["permission"].ToString(), "view", "5"))
+                                {
+                                    <li>@Html.ActionLink("User Account and Role", "Index", "AccountInfoes")</li>
+                                }
+                                @if (PermissionChecker.CheckUserPermission(Session["permission"].ToString(), "view", "6"))
+                                {
+                                    <li>@Html.ActionLink("Roles and Permission Manager", "Index", "UMS")</li>
+                                }
+                                @if (PermissionChecker.CheckUserPermission(Session["permission"].ToString(), "view", "8"))
+                                {
+                                    <li>@Html.ActionLink("Holiday Table", "Index", "HolidayTables")</li>
+                                }
+                            </ul>
+                        </li>
+                        @if (PermissionChecker.CheckUserPermission(Session["permission"].ToString(), "view", "10"))
+                        {
+                        <li>@Html.ActionLink("Leave Application", "Index", "Leave_Application")</li>
+                        }
+                        <li style="right:0"><a href="/Login/Logout">Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+
+        </nav>
+
+    </div>
+    <div class="row">
+        <div class="container body-content">
+            @RenderBody()
+            <hr />
+            <footer style="text-align:center">
+                <p>&copy; @DateTime.Now.Year - @Session["company_name"].ToString() - ERP System</p>
+            </footer>
+        </div>
+    </div>
+
+
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+    @RenderSection("scripts", required: false)
+</body>
+</html>

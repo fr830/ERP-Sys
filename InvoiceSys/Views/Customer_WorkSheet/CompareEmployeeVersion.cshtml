@@ -1,0 +1,305 @@
+﻿@model IEnumerable<MrAng_Invoice.Models.Customer_WorkSheet>
+
+@{
+    ViewBag.Title = "ImportQuotation_PopUp";
+    Layout = null;
+}
+
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title - My ASP.NET Application</title>
+
+    @Styles.Render("~/Content/css")
+    @Scripts.Render("~/bundles/modernizr")
+    @Styles.Render("~/Content/fontawesome/font-awesome.css")
+    @Styles.Render("~/Content/fontawesome/font-awesome.min.css")
+</head>
+<body>
+    <h2>Compare Customer Version VS Employee Version</h2>
+    <div class="col-md-6">
+        <h3>Customer Version: </h3>
+        <dl class="dl-horizontal">
+            <dt>
+                @Html.DisplayNameFor(model => model.ticket_id)
+            </dt>
+
+            <dd>
+                 @ViewBag.customer_worksheet.ticket_id
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.employee_ID)
+            </dt>
+
+            <dd>
+                @ViewBag.customer_worksheet.employee_id
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.employee_name)
+            </dt>
+
+            <dd>
+                @ViewBag.customer_worksheet.employee_name
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.employee_worksheet_ID)
+            </dt>
+
+            <dd>
+                @ViewBag.customer_worksheet.employee_worksheet_ID
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.working_date)
+            </dt>
+
+            <dd>
+                @ViewBag.customer_worksheet.working_date
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.time_in)
+            </dt>
+
+            <dd>
+                @ViewBag.customer_worksheet.time_in
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.time_out)
+            </dt>
+
+            <dd>
+                @ViewBag.customer_worksheet.time_out
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.total_working_hour)
+            </dt>
+
+            <dd>
+                @ViewBag.customer_worksheet.total_working_hour
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.client_served)
+            </dt>
+
+            <dd>
+                @ViewBag.customer_worksheet.client_served
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.submission_date)
+            </dt>
+
+            <dd>
+                @ViewBag.customer_worksheet.submission_date
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.approval_date)
+            </dt>
+
+            <dd>
+                @ViewBag.customer_worksheet.approval_date
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.approval_status)
+            </dt>
+
+            <dd>
+                @ViewBag.customer_worksheet.approval_status
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.job_location)
+            </dt>
+
+            <dd>
+                @ViewBag.customer_worksheet.job_location
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.job_description)
+            </dt>
+
+            <dd>
+                @ViewBag.customer_worksheet.job_description
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.followup_by)
+            </dt>
+
+            <dd>
+                @ViewBag.customer_worksheet.followup_by
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.requested_by)
+            </dt>
+
+            <dd>
+                @ViewBag.customer_worksheet.requested_by
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.remarks)
+            </dt>
+
+            <dd>
+                @ViewBag.customer_worksheet.remarks
+            </dd>
+
+        </dl>
+    </div>
+    <div class="col-md-6">
+        <h3>Employee Version: </h3>
+        <dl class="dl-horizontal">
+            <dt>
+                @Html.DisplayNameFor(model => model.ticket_id)
+            </dt>
+
+            <dd>
+                @ViewBag.employee_worksheet.ticket_id
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.employee_ID)
+            </dt>
+
+            <dd>
+                @ViewBag.employee_worksheet.employee_id
+            </dd>
+            <dt>
+                @Html.DisplayNameFor(model => model.employee_name)
+            </dt>
+
+            <dd>
+                @ViewBag.employee_worksheet.employee_name
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.employee_worksheet_ID)
+            </dt>
+
+            <dd>
+                @ViewBag.employee_worksheet.worksheet_ID
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.working_date)
+            </dt>
+
+            <dd>
+                @ViewBag.employee_worksheet.working_date
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.time_in)
+            </dt>
+
+            <dd>
+                @ViewBag.employee_worksheet.time_in
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.time_out)
+            </dt>
+
+            <dd>
+                @ViewBag.employee_worksheet.time_out
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.total_working_hour)
+            </dt>
+
+            <dd>
+                @ViewBag.employee_worksheet.total_working_hour
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.client_served)
+            </dt>
+
+            <dd>
+                @ViewBag.employee_worksheet.client_served
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.submission_date)
+            </dt>
+
+            <dd>
+                @ViewBag.employee_worksheet.submission_date
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.approval_date)
+            </dt>
+
+            <dd>
+                @ViewBag.employee_worksheet.approval_date
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.approval_status)
+            </dt>
+
+            <dd>
+                @ViewBag.employee_worksheet.approval_status
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.job_location)
+            </dt>
+
+            <dd>
+                @ViewBag.employee_worksheet.job_location
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.job_description)
+            </dt>
+
+            <dd>
+                @ViewBag.employee_worksheet.job_description
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.followup_by)
+            </dt>
+
+            <dd>
+                @ViewBag.employee_worksheet.followup_by
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.requested_by)
+            </dt>
+
+            <dd>
+                @ViewBag.employee_worksheet.requested_by
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.remarks)
+            </dt>
+
+            <dd>
+                @ViewBag.employee_worksheet.remarks
+            </dd>
+
+        </dl>
+    </div>
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+</body>
+</html>

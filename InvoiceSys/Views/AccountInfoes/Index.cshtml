@@ -1,0 +1,135 @@
+﻿@model IEnumerable<MrAng_Invoice.Models.AccountInfo>
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Account Management</h2>
+
+<p>
+    @if (PermissionChecker.CheckUserPermission(Session["permission"].ToString(), "create", "5"))
+    {
+        @Html.ActionLink("Create New Account", "Create")
+    }
+    @using (Html.BeginForm("Index", "AccountInfoes", FormMethod.Post))
+    {
+    <p>
+
+            Company Name:
+            <input list="company" name="companySearch" id="companySearch">
+            <datalist id="company">
+                @{
+                    for (int i = 0; i < ViewBag.companyName.Count; i++)
+                    {
+                        <option value="@ViewBag.companyName[i]">@ViewBag.companyName[i]</option>
+                    }
+
+                }
+            </datalist>
+                    
+
+
+
+        <input type="submit" value="Filter" />
+    </p>
+                    }
+</p>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.user_full_name)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.user_contact_no)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.username)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.company_name)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.account_role)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.user_type)
+        </th>
+        <!--<th>
+            Is Working?
+        </th>-->
+        <th>
+            @Html.DisplayNameFor(model => model.status)
+        </th>
+
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.user_full_name)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.user_contact_no)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.username)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.company_name)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.account_role)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.user_type)
+        </td>
+        <!--
+            <td>
+            if (LeaveFunctionView.isWorking(item.username, ViewBag.employeeOnLeave))
+            {
+                <p style="color:red">On Leave</p>
+            }
+            else
+            {
+                <p style="color:green">Working</p>
+            } 
+        </td>
+        -->
+        <td>
+            @Html.DisplayFor(modelItem => item.status)
+        </td>
+        <td>
+            @if (PermissionChecker.CheckUserPermission(Session["permission"].ToString(), "edit", "5"))
+            {
+            @Html.ActionLink("Edit", "Edit", new { id = item.ID }) @:|
+            }
+            @if (PermissionChecker.CheckUserPermission(Session["permission"].ToString(), "view", "5"))
+            {
+            @Html.ActionLink("Details", "Details", new { id = item.ID }) @:|
+
+            }
+            @if (PermissionChecker.CheckUserPermission(Session["permission"].ToString(), "delete", "5"))
+            {
+            @Html.ActionLink("Delete", "Delete", new { id = item.ID }) @:| 
+            }
+            @if (item.status != "Active")
+            {
+                if (PermissionChecker.CheckUserPermission(Session["permission"].ToString(), "approve", "5"))
+                {
+                    @Html.ActionLink("Active", "ActivateUser", new { id = item.ID }) 
+                }
+            }
+            else
+            {
+                if (PermissionChecker.CheckUserPermission(Session["permission"].ToString(), "approve", "5"))
+                {
+                @Html.ActionLink("Inactive", "DeactivateUser", new { id = item.ID })
+                }
+            }
+
+        </td>
+    </tr>
+}
+
+</table>

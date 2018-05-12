@@ -1,0 +1,138 @@
+﻿@model MrAng_Invoice.Models.Employee_WorkSheet
+
+@{
+    ViewBag.Title = "Details";
+}
+
+<h2>Details</h2>
+
+<div>
+    <h4>@Model.ticket_ID Information</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.ticket_ID)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.ticket_ID)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.employee_ID)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.employee_ID)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.employee_name)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.employee_name)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.working_date)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.working_date)
+        </dd>
+        <dt>
+            Day:
+        </dt>
+
+        <dd>
+            @Model.working_date.DayOfWeek
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.working_date_type)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.working_date_type)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.time_in)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.time_in)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.time_out)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.time_out)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.total_working_hour)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.total_working_hour)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.client_served)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.client_served)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.job_location)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.job_location)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.job_description)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.job_description)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.submission_date)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.submission_date)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.approval_date)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.approval_date)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.approval_status)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.approval_status)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.remarks)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.remarks)
+        </dd>
+
+    </dl>
+</div>
+<p>
+    <!-- Html.ActionLink("Edit", "Edit", new { id = Model.worksheet_ID }) |-->
+    @Html.ActionLink("Back to List", "Index")
+</p>

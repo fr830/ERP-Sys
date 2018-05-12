@@ -1,0 +1,63 @@
+﻿@{
+    var invalid_message = "";
+    invalid_message = Request.QueryString["invalid_message"];
+    Layout = null;
+    Database db = Database.Open("InvoiceSysDBContext");
+    var company_logo = db.QueryValue("SELECT value FROM tbl_system_parameters WHERE name = 'company_logo'");
+    var company_name = db.QueryValue("SELECT value FROM tbl_system_parameters WHERE name = 'company_name'");
+}
+    @Styles.Render("~/Content/css")
+    @Scripts.Render("~/bundles/modernizr")
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+
+    <html lang="en">
+<head>
+    <link rel="stylesheet" type="text/css" href="~/Content/LoginCSS/design.css">
+    <meta charset="utf-8" />
+    <title></title>
+    <style>
+     
+    </style>
+</head>
+
+<body>
+    <section id="login">
+        <div class="container">
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="form-inline text-center">
+                        <img src="data:image/jpeg;base64,@company_logo" alt="Company Logo" width="300" height="200" />
+                        <h2 class="form-signin-heading">@company_name</h2>
+                    </div>
+                    <div class="form-wrap">
+
+                        <form role="form" action="/Login/Index" method="post" id="login-form" autocomplete="off">
+                            <div class="text-center" style="margin: 0px 30px">
+                                <div class="form-group">
+                                    <label for="email" class="sr-only">Email</label>
+                                    <input type="text" name="username" id="username" class="form-control" placeholder="Username" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="key" class="sr-only">Password</label>
+                                    <input type="password" name="password" id="password" class="form-control" placeholder="Password" required>
+                                </div>
+                                <p style="color:red;">@ViewBag.message </p>
+      
+                                <input type="submit" id="btn-login" class="btn btn-custom btn-lg btn-block" value="Log in">
+                                <br />
+                                <a href="/Login/ForgotPassword">Forgot Password?</a>
+                            </div>
+                          </form>
+                        <hr>
+                    </div>
+                </div> <!-- /.col-xs-12 -->
+            </div> <!-- /.row -->
+        </div> <!-- /.container -->
+    </section>
+</body>
+
+</html>
+<script>
+
+</script>

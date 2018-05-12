@@ -1,0 +1,100 @@
+﻿@model MrAng_Invoice.Models.HolidayTable
+
+@{
+    ViewBag.Title = "Create";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var begin = DateTime.Parse(DateTime.Now.Year.ToString() + "-01-01");
+    var end = DateTime.Parse(DateTime.Now.Year.ToString() + "-12-31");
+    var counter = 0;
+    var clearFixCounter = 0;
+}
+
+<h2>Create Holiday Table</h2>
+<style>
+    .ui-datepicker-calendar, .ui-datepicker-month {
+        display: none;
+    }
+
+
+</style>
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(model => model.referenceKey);
+    <input type="number" id="year" name="year" readonly class="date-own form-control" maxlength="4" placeholder="eg:2018" />
+    <br />
+    <select id="state" name="state" class="form-control">
+        @{
+            for (int i = 0; i < DropDownList.CreateStateList().Count(); i++)
+            {
+                <option value="@DropDownList.CreateStateList()[i]">@DropDownList.CreateStateList()[i]</option>
+            }
+
+        }
+    </select>
+    for (DateTime date = begin; date <= end; date = date.AddMonths(1))
+    {
+        counter = 0;
+        clearFixCounter++;
+        <div class="col-md-4" style="margin-top:20px;">
+
+            <label>@date.ToString("MMMM")</label>
+            <br />
+                <label style="margin-right:10px">M</label>
+                <label style="margin-right:10px">T</label>
+                <label style="margin-right:10px">W</label>
+                <label style="margin-right:10px">T</label>
+                <label style="margin-right:10px">F</label>
+                <label style="margin-right:10px">S</label>
+                <label style="margin-right:10px">S</label>
+            <br />
+            @for (int i = 0; i < HolidayTableDesign.loop(date); i++)
+            {
+                <label style="margin-right:20px"></label>
+                counter = HolidayTableDesign.loop(date);
+            }
+            
+            @for (DateTime date2 = date; date2 < date.AddMonths(1); date2 = date2.AddDays(1))
+            {
+                if (counter >= 7)
+                {
+                    <br>
+                    counter = 0;
+                }
+                <label style="width:20px; height:40px">@date2.ToString("dd") <br />
+                    <input type="checkbox" name="holidayDate" id="holidayDate" value="@date2.ToString("dd/MM")">
+                 </label>
+
+                counter++;
+            }
+        </div>
+        if (clearFixCounter % 3 == 0)
+        {
+            <div class="clearfix"></div>
+        }
+
+
+    }
+    <br />
+    <input type="submit" value="Create" class="btn btn-default" />
+
+}
+
+<div style="margin-top:20px">
+    @Html.ActionLink("Back to List", "Index")
+</div>
+<script>
+    $(document).ready(function () {
+        $("#year").datepicker({
+            changeMonth: false,
+            changeYear: true,
+            showButtonPanel: true,
+            yearRange: '2018:2100', // Optional Year Range
+            dateFormat: 'yy',
+            onClose: function (dateText, inst) {
+                var year = $("#ui-datepicker-div .ui-datepicker-year :selected").val();
+                $(this).datepicker('setDate', new Date(year, 0, 1));
+            }
+        });
+    });
+</script>

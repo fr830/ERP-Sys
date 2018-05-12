@@ -1,0 +1,60 @@
+﻿@model IEnumerable<MrAng_Invoice.Models.UMS>
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Roles and Permission Manager</h2>
+
+<p>
+@if (PermissionChecker.CheckUserPermission(Session["permission"].ToString(), "create", "6"))
+{
+    @Html.ActionLink("Create New Role", "Create")
+}
+</p>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.role_name)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.created_by)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.created_date)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.status)
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.role_name)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.created_by)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.created_date)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.status)
+        </td>
+        <td>
+            @if (PermissionChecker.CheckUserPermission(Session["permission"].ToString(), "edit", "6"))
+            {
+                @Html.ActionLink("Edit", "Edit", new { id = item.ums_id }) @:|
+            }
+            @if (PermissionChecker.CheckUserPermission(Session["permission"].ToString(), "delete", "6"))
+            {
+            @Html.ActionLink("Delete", "Delete", new { id = item.ums_id })
+            }
+        </td>
+    </tr>
+}
+
+</table>

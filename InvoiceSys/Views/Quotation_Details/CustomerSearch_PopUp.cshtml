@@ -1,0 +1,99 @@
+﻿@model IEnumerable<MrAng_Invoice.Models.Customer_PrivateInfo>
+
+@{
+    ViewBag.Title = "CustomerSearch_PopUp";
+    Layout = "";
+    var id = 0;
+}
+@RenderPage("../HeaderFile.cshtml")
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title - My ASP.NET Application</title>
+
+    @Styles.Render("~/Content/css")
+    @Scripts.Render("~/bundles/modernizr")
+    @Styles.Render("~/Content/fontawesome/font-awesome.css")
+    @Styles.Render("~/Content/fontawesome/font-awesome.min.css")
+</head>
+<body>
+
+
+
+
+    <div class="container body-content">
+        @using (Html.BeginForm("CustomerSearch_PopUp", "Quotation_Details", FormMethod.Post))
+        {
+            <label>Company Name:</label>
+            <input list="company" name="companySearch" id="companySearch" >
+            <datalist id="company">
+                @for (int i = 0; i < ViewBag.company.Count; i++)
+                {
+                    <option value="@ViewBag.company[i]">@ViewBag.company[i]</option>
+                }
+            </datalist>
+            <input type="submit" value="Filter" />
+        }
+        <h2>Customer Search: </h2>
+        <table class="table">
+            <tr>
+                <th>
+                    @Html.DisplayNameFor(model => model.company_name)
+                </th>
+                <th style="width:50%">
+                    @Html.DisplayNameFor(model => model.company_address)
+                </th>
+                <th>
+                    Attention To:
+                </th>
+                <th>
+                    Action
+                </th>
+            </tr>
+
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td id="company_name_@id">
+                        @Html.DisplayFor(modelItem => item.company_name)
+                    </td>
+                    <td id="company_address_@id">
+                        @Html.DisplayFor(modelItem => item.company_address)
+                    </td>
+                    <td >
+                        <select id="attn_to_@id" class="form-control">
+                            <option value="@item.company_person_incharge1">@item.company_person_incharge1</option>
+                            <option value="@item.company_person_incharge2">@item.company_person_incharge2</option>
+                            <option value="@item.company_person_incharge3">@item.company_person_incharge3</option>
+                        </select>
+                    </td>
+                    <td >
+                        <button type="button" onclick="selectCompany(@id)" class="btn btn-primary">Submit</button>
+                    </td>
+                </tr>
+                id++;
+            }
+
+        </table>
+    </div>
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+
+
+</body>
+</html>
+<script>
+    function selectCompany(id) {
+        var company_name = document.getElementById("company_name_" + id).innerText;
+        var company_address = document.getElementById("company_address_" + id).innerText;
+        var attn_to = document.getElementById("attn_to_" + id).value;
+        var parent_company_name = window.opener.document.getElementById("company_name");
+        parent_company_name.value = company_name;
+        var parent_company_address = window.opener.document.getElementById("company_address");
+        parent_company_address.value = company_address;
+        var parent_attn_to = window.opener.document.getElementById("attn_to");
+        parent_attn_to.value = attn_to;
+        window.close();
+    }
+</script>

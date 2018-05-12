@@ -1,0 +1,593 @@
+﻿@model  MrAng_Invoice.Models.Customer_PrivateInfo
+@RenderPage("../HeaderFile.cshtml")
+@{
+    Layout = null;
+}
+@using System;
+@using System.IO;
+@using iTextSharp.text;
+@using iTextSharp.text.html;
+@using iTextSharp.text.pdf;
+@using System.Data;
+@using System.Data.SqlClient;
+@using System.Collections;
+@using System.Globalization;
+@using System.Threading;
+
+@{
+    Database db = Database.Open("InvoiceSysDBContext");
+    var company_info = db.QuerySingle("SELECT customer_id, company_name FROM Customer_PrivateInfo WHERE id=@0", Model.id);
+    dynamic result = null;
+
+    if (ViewBag.isChargeable)
+    {
+        result = db.Query("SELECT * FROM Customer_WorkSheet WHERE client_served=@0 AND FORMAT(working_date,'MM/yyyy')=@1 AND approval_status !='Amended' AND isChargeable = 1", company_info.company_name, ViewBag.dateOfReport);
+    }
+    else
+    {
+        result = db.Query("SELECT * FROM Customer_WorkSheet WHERE client_served=@0 AND FORMAT(working_date,'MM/yyyy')=@1 AND approval_status !='Amended' ", company_info.company_name, ViewBag.dateOfReport);
+    }
+
+    int ttlBeforeWorkingHr = 0, ttlWorkingHr = 0, ttlAfterWorkingHr = 0;
+    int ttlBDBeforeWorkingHr = 0, ttlBDWorkingHr = 0, ttlBDAfterWorkingHr = 0;
+    int ttlNBDBeforeWorkingHr = 0, ttlNBDWorkingHr = 0, ttlNBDAfterWorkingHr = 0;
+
+    Document document = new Document(PageSize.A4, -40f, -40f, 30f, 0f);
+    document.SetPageSize(iTextSharp.text.PageSize.A4.Rotate());
+    PdfWriter writer = PdfWriter.GetInstance(document, Response.OutputStream);
+    PdfPTable header = new PdfPTable(4);
+    PdfPTable body = new PdfPTable(16);
+    PdfPTable footer = new PdfPTable(10);
+
+    body.DefaultCell.HorizontalAlignment = Element.ALIGN_MIDDLE;
+    body.DefaultCell.VerticalAlignment = Element.ALIGN_CENTER;
+    document.Open();
+    PdfContentByte cb = writer.DirectContent;
+    cb.BeginText();
+    cb.EndText();
+    BaseFont bfTimes = BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, false); // create fonts
+    Font times = new Font(bfTimes, 10); // Adjust size
+    Font labelFont = new Font(bfTimes, 10,Font.BOLD); // Adjust size
+    Font detailsFont = new Font(bfTimes, 9); // Adjust size
+    Font bodyLabelFont = new Font(bfTimes, 8, Font.BOLD); // Adjust size
+    Font bodyDetails = new Font(bfTimes, 8); // Adjust size
+    Font footerLabelFont = new Font(bfTimes, 12, Font.BOLD); // Adjust size
+    Font footerDetails = new Font(bfTimes, 9); // Adjust size
+
+    PdfPCell headerCell = new PdfPCell(new Phrase("Company Name: ", labelFont));
+    headerCell.Colspan = 1; headerCell.HorizontalAlignment = 0; headerCell.Border = Rectangle.NO_BORDER;
+    header.AddCell(headerCell);
+
+    headerCell = new PdfPCell(new Phrase(company_info.company_name, detailsFont));
+    headerCell.Colspan = 3; headerCell.HorizontalAlignment = 0; headerCell.Border = Rectangle.NO_BORDER;
+    header.AddCell(headerCell);
+
+    headerCell = new PdfPCell(new Phrase("Company ID: ", labelFont));
+    headerCell.Colspan = 1; headerCell.HorizontalAlignment = 0; headerCell.Border = Rectangle.NO_BORDER;
+    header.AddCell(headerCell);
+
+    headerCell = new PdfPCell(new Phrase(company_info.customer_id, detailsFont));
+    headerCell.Colspan = 3; headerCell.HorizontalAlignment = 0; headerCell.Border = Rectangle.NO_BORDER;
+    header.AddCell(headerCell);
+
+    headerCell = new PdfPCell(new Phrase("Month: ", labelFont));
+    headerCell.Colspan = 1; headerCell.HorizontalAlignment = 0; headerCell.Border = Rectangle.NO_BORDER;
+    header.AddCell(headerCell);
+
+    headerCell = new PdfPCell(new Phrase(ViewBag.dateOfReport, detailsFont));
+    headerCell.Colspan = 3; headerCell.HorizontalAlignment = 0; headerCell.Border = Rectangle.NO_BORDER;
+    header.AddCell(headerCell);
+
+    //Body Starts
+    /*********************************************************************************************************************************/
+    List<PdfPCell> bodyHeaderList = new List<PdfPCell>();
+
+    PdfPCell space = new PdfPCell(new Phrase("\r\n\r\n"));
+    space.Colspan = 17; space.Rowspan = 2; space.Border = Rectangle.NO_BORDER;
+    body.AddCell(space);
+
+    PdfPCell bodyCell = new PdfPCell(new Phrase("A. Working Attendance (All Record)", labelFont));
+    bodyCell.Colspan = 17; bodyCell.HorizontalAlignment = 0; bodyCell.VerticalAlignment = Element.ALIGN_BOTTOM; bodyCell.Border = Rectangle.NO_BORDER;
+    body.AddCell(bodyCell);
+
+    bodyCell = new PdfPCell(new Phrase("No:", bodyLabelFont));
+    bodyCell.Colspan = 1; bodyCell.Rowspan = 2; bodyCell.HorizontalAlignment = 1; bodyCell.VerticalAlignment = Element.ALIGN_MIDDLE;
+    bodyHeaderList.Add(bodyCell);
+    body.AddCell(bodyCell);
+
+    bodyCell = new PdfPCell(new Phrase("Ticket ID:", bodyLabelFont));
+    bodyCell.Colspan = 2; bodyCell.Rowspan = 2; bodyCell.HorizontalAlignment = 1; bodyCell.VerticalAlignment = Element.ALIGN_MIDDLE;
+    bodyHeaderList.Add(bodyCell);
+    body.AddCell(bodyCell);
+
+    bodyCell = new PdfPCell(new Phrase("Engineer Served:", bodyLabelFont));
+    bodyCell.Colspan = 3; bodyCell.Rowspan = 2; bodyCell.HorizontalAlignment = 1; bodyCell.VerticalAlignment = Element.ALIGN_MIDDLE;
+    bodyHeaderList.Add(bodyCell);
+    body.AddCell(bodyCell);
+
+    bodyCell = new PdfPCell(new Phrase("Work Date:", bodyLabelFont));
+    bodyCell.Colspan = 3; bodyCell.HorizontalAlignment = 1;
+    bodyHeaderList.Add(bodyCell);
+    body.AddCell(bodyCell);
+
+
+    bodyCell = new PdfPCell(new Phrase("Work Date:", bodyLabelFont));
+    bodyCell.Colspan = 3; bodyCell.HorizontalAlignment = 1;
+    bodyHeaderList.Add(bodyCell);
+    body.AddCell(bodyCell);
+
+    bodyCell = new PdfPCell(new Phrase("Break Down:", bodyLabelFont));
+    bodyCell.Colspan = 3; bodyCell.HorizontalAlignment = 1;
+    bodyHeaderList.Add(bodyCell);
+    body.AddCell(bodyCell);
+
+    bodyCell = new PdfPCell(new Phrase("Status", bodyLabelFont));
+    bodyCell.Colspan = 1; bodyCell.Rowspan = 2; bodyCell.HorizontalAlignment = 1; bodyCell.VerticalAlignment = Element.ALIGN_MIDDLE;
+    bodyHeaderList.Add(bodyCell);
+    body.AddCell(bodyCell);
+
+    bodyCell = new PdfPCell(new Phrase("Day:", bodyLabelFont));
+    bodyCell.Colspan = 1; bodyCell.HorizontalAlignment = 1;
+    bodyHeaderList.Add(bodyCell);
+    body.AddCell(bodyCell);
+
+    bodyCell = new PdfPCell(new Phrase("Type:", bodyLabelFont));
+    bodyCell.Colspan = 1; bodyCell.HorizontalAlignment = 1;
+    bodyHeaderList.Add(bodyCell);
+    body.AddCell(bodyCell);
+
+    bodyCell = new PdfPCell(new Phrase("Date:", bodyLabelFont));
+    bodyCell.Colspan = 1; bodyCell.HorizontalAlignment = 1;
+    bodyHeaderList.Add(bodyCell);
+    body.AddCell(bodyCell);
+
+    bodyCell = new PdfPCell(new Phrase("Time In:", bodyLabelFont));
+    bodyCell.Colspan = 1; bodyCell.HorizontalAlignment = 1;
+    bodyHeaderList.Add(bodyCell);
+    body.AddCell(bodyCell);
+
+    bodyCell = new PdfPCell(new Phrase("Time Out:", bodyLabelFont));
+    bodyCell.Colspan = 1; bodyCell.HorizontalAlignment = 1;
+    bodyHeaderList.Add(bodyCell);
+    body.AddCell(bodyCell);
+
+    bodyCell = new PdfPCell(new Phrase("Total Hour:", bodyLabelFont));
+    bodyCell.Colspan = 1; bodyCell.HorizontalAlignment = 1;
+    bodyHeaderList.Add(bodyCell);
+    body.AddCell(bodyCell);
+
+    bodyCell = new PdfPCell(new Phrase("0000-0900 hrs:", bodyLabelFont));
+    bodyCell.Colspan = 1; bodyCell.HorizontalAlignment = 1;
+    bodyHeaderList.Add(bodyCell);
+    body.AddCell(bodyCell);
+
+    bodyCell = new PdfPCell(new Phrase("0900-1700 hrs:", bodyLabelFont));
+    bodyCell.Colspan = 1; bodyCell.HorizontalAlignment = 1;
+    bodyHeaderList.Add(bodyCell);
+    body.AddCell(bodyCell);
+
+    bodyCell = new PdfPCell(new Phrase("1700-2359hrs:", bodyLabelFont));
+    bodyCell.Colspan = 1; bodyCell.HorizontalAlignment = 1;
+    bodyHeaderList.Add(bodyCell);
+    body.AddCell(bodyCell);
+
+    var counter = 0;
+    foreach(var r in result)
+    {
+        counter++;
+        bodyCell = new PdfPCell(new Phrase(counter.ToString(), bodyDetails));
+        bodyCell.Colspan = 1; bodyCell.HorizontalAlignment = 1;
+        body.AddCell(bodyCell);
+
+        bodyCell = new PdfPCell(new Phrase(r.ticket_id, bodyDetails));
+        bodyCell.Colspan = 2; bodyCell.HorizontalAlignment = 1;
+        body.AddCell(bodyCell);
+
+        bodyCell = new PdfPCell(new Phrase(r.employee_name, bodyDetails));
+        bodyCell.Colspan = 3; bodyCell.HorizontalAlignment = 1;
+        body.AddCell(bodyCell);
+
+        bodyCell = new PdfPCell(new Phrase(r.working_date.ToString("dddd"), bodyDetails));
+        bodyCell.Colspan = 1; bodyCell.HorizontalAlignment = 1;
+        body.AddCell(bodyCell);
+
+        bodyCell = new PdfPCell(new Phrase(r.working_date_type, bodyDetails));
+        bodyCell.Colspan = 1; bodyCell.HorizontalAlignment = 1;
+        body.AddCell(bodyCell);
+
+        bodyCell = new PdfPCell(new Phrase(r.working_date.ToString("dd/MM/yyyy"), bodyDetails));
+        bodyCell.Colspan = 1; bodyCell.HorizontalAlignment = 1;
+        body.AddCell(bodyCell);
+
+        bodyCell = new PdfPCell(new Phrase(r.time_in.ToString("HH:mm"), bodyDetails));
+        bodyCell.Colspan = 1; bodyCell.HorizontalAlignment = 1;
+        body.AddCell(bodyCell);
+
+        bodyCell = new PdfPCell(new Phrase(r.time_out.ToString("HH:mm"), bodyDetails));
+        bodyCell.Colspan = 1; bodyCell.HorizontalAlignment = 1;
+        body.AddCell(bodyCell);
+
+        bodyCell = new PdfPCell(new Phrase(r.total_working_hour.ToString(), bodyDetails));
+        bodyCell.Colspan = 1; bodyCell.HorizontalAlignment = 1;
+        body.AddCell(bodyCell);
+
+        dynamic beforeWorkingHour = (TimeSpan.Parse("09:00") - TimeSpan.Parse(r.time_in.ToString("HH:mm"))).Hours;
+        beforeWorkingHour = Convert.ToInt32(beforeWorkingHour.ToString()) < 0 ? "0" : beforeWorkingHour.ToString();
+        dynamic afterWorkingHour = (TimeSpan.Parse(r.time_out.ToString("HH:mm")) - TimeSpan.Parse("17:00")).Hours;
+        afterWorkingHour = Convert.ToInt32(afterWorkingHour.ToString()) < 0 ? "0" : afterWorkingHour.ToString();
+        dynamic workingHour = Convert.ToInt32(r.total_working_hour) - Convert.ToInt32(beforeWorkingHour) - Convert.ToInt32(afterWorkingHour);
+        workingHour = workingHour < 0 ? "0" : workingHour.ToString();
+
+
+        ttlBeforeWorkingHr = ttlBeforeWorkingHr + Convert.ToInt32(beforeWorkingHour);
+        ttlAfterWorkingHr = ttlAfterWorkingHr + Convert.ToInt32(afterWorkingHour);
+        ttlWorkingHr = ttlWorkingHr + Convert.ToInt32(workingHour);
+
+
+        bodyCell = new PdfPCell(new Phrase(beforeWorkingHour, bodyDetails));
+        bodyCell.Colspan = 1; bodyCell.HorizontalAlignment = 1;
+        body.AddCell(bodyCell);
+
+        bodyCell = new PdfPCell(new Phrase(workingHour.ToString(), bodyDetails));
+        bodyCell.Colspan = 1; bodyCell.HorizontalAlignment = 1;
+        body.AddCell(bodyCell);
+
+        bodyCell = new PdfPCell(new Phrase(afterWorkingHour.ToString(), bodyDetails));
+        bodyCell.Colspan = 1; bodyCell.HorizontalAlignment = 1;
+        body.AddCell(bodyCell);
+
+        bodyCell = new PdfPCell(new Phrase(r.approval_status.ToString(), bodyDetails));
+        bodyCell.Colspan = 1; bodyCell.HorizontalAlignment = 1;
+        body.AddCell(bodyCell);
+    }
+
+    bodyCell = new PdfPCell(new Phrase(""));
+    bodyCell.Colspan = 10;
+    body.AddCell(bodyCell);
+
+    bodyCell = new PdfPCell(new Phrase("Total", bodyDetails));
+    bodyCell.Colspan = 1;
+    body.AddCell(bodyCell);
+
+    bodyCell = new PdfPCell(new Phrase((ttlBeforeWorkingHr + ttlWorkingHr + ttlAfterWorkingHr).ToString(), bodyDetails));
+    bodyCell.Colspan = 1; bodyCell.HorizontalAlignment = 1;
+    body.AddCell(bodyCell);
+
+    bodyCell = new PdfPCell(new Phrase(ttlBeforeWorkingHr.ToString(), bodyDetails));
+    bodyCell.Colspan = 1; bodyCell.HorizontalAlignment = 1;
+    body.AddCell(bodyCell);
+
+    bodyCell = new PdfPCell(new Phrase(ttlWorkingHr.ToString(), bodyDetails));
+    bodyCell.Colspan = 1; bodyCell.HorizontalAlignment = 1;
+    body.AddCell(bodyCell);
+
+    bodyCell = new PdfPCell(new Phrase(ttlAfterWorkingHr.ToString(), bodyDetails));
+    bodyCell.Colspan = 1; bodyCell.HorizontalAlignment = 1;
+    body.AddCell(bodyCell);
+
+    //PART B
+    //*************************************************************************************************************************************
+    space = new PdfPCell(new Phrase(""));
+    space.Colspan = 1;
+    body.AddCell(space);
+
+    space = new PdfPCell(new Phrase("\r\n\r\n"));
+    space.Colspan = 17; space.Rowspan = 2; space.Border = Rectangle.NO_BORDER;
+    body.AddCell(space);
+
+    bodyCell = new PdfPCell(new Phrase("B. Normal Bussiness Day", labelFont));
+    bodyCell.Colspan = 17; bodyCell.HorizontalAlignment = 0; bodyCell.VerticalAlignment = Element.ALIGN_BOTTOM; bodyCell.Border = Rectangle.NO_BORDER;
+    body.AddCell(bodyCell);
+
+    for (int i=0; i < bodyHeaderList.Count; i++)
+    {
+        body.AddCell(bodyHeaderList[i]);
+    }
+
+    ttlWorkingHr = 0; ttlAfterWorkingHr = 0; ttlBeforeWorkingHr = 0; counter = 0;
+    foreach (var r in result)
+    {
+        if (r.working_date_type == "BD")
+        {
+            counter++;
+            bodyCell = new PdfPCell(new Phrase(counter.ToString(), bodyDetails));
+            bodyCell.Colspan = 1; bodyCell.HorizontalAlignment = 1;
+            body.AddCell(bodyCell);
+
+            bodyCell = new PdfPCell(new Phrase(r.ticket_id, bodyDetails));
+            bodyCell.Colspan = 2; bodyCell.HorizontalAlignment = 1;
+            body.AddCell(bodyCell);
+
+            bodyCell = new PdfPCell(new Phrase(r.employee_name, bodyDetails));
+            bodyCell.Colspan = 3; bodyCell.HorizontalAlignment = 1;
+            body.AddCell(bodyCell);
+
+            bodyCell = new PdfPCell(new Phrase(r.working_date.ToString("dddd"), bodyDetails));
+            bodyCell.Colspan = 1; bodyCell.HorizontalAlignment = 1;
+            body.AddCell(bodyCell);
+
+            bodyCell = new PdfPCell(new Phrase(r.working_date_type, bodyDetails));
+            bodyCell.Colspan = 1; bodyCell.HorizontalAlignment = 1;
+            body.AddCell(bodyCell);
+
+            bodyCell = new PdfPCell(new Phrase(r.working_date.ToString("dd/MM/yyyy"), bodyDetails));
+            bodyCell.Colspan = 1; bodyCell.HorizontalAlignment = 1;
+            body.AddCell(bodyCell);
+
+            bodyCell = new PdfPCell(new Phrase(r.time_in.ToString("HH:mm"), bodyDetails));
+            bodyCell.Colspan = 1; bodyCell.HorizontalAlignment = 1;
+            body.AddCell(bodyCell);
+
+            bodyCell = new PdfPCell(new Phrase(r.time_out.ToString("HH:mm"), bodyDetails));
+            bodyCell.Colspan = 1; bodyCell.HorizontalAlignment = 1;
+            body.AddCell(bodyCell);
+
+            bodyCell = new PdfPCell(new Phrase(r.total_working_hour.ToString(), bodyDetails));
+            bodyCell.Colspan = 1; bodyCell.HorizontalAlignment = 1;
+            body.AddCell(bodyCell);
+
+            dynamic beforeWorkingHour = (TimeSpan.Parse("09:00") - TimeSpan.Parse(r.time_in.ToString("HH:mm"))).Hours;
+            beforeWorkingHour = Convert.ToInt32(beforeWorkingHour.ToString()) < 0 ? "0" : beforeWorkingHour.ToString();
+            dynamic afterWorkingHour = (TimeSpan.Parse(r.time_out.ToString("HH:mm")) - TimeSpan.Parse("17:00")).Hours;
+            afterWorkingHour = Convert.ToInt32(afterWorkingHour.ToString()) < 0 ? "0" : afterWorkingHour.ToString();
+            dynamic workingHour = Convert.ToInt32(r.total_working_hour) - Convert.ToInt32(beforeWorkingHour) - Convert.ToInt32(afterWorkingHour);
+            workingHour = workingHour < 0 ? "0" : workingHour.ToString();
+
+
+            ttlBeforeWorkingHr = ttlBeforeWorkingHr + Convert.ToInt32(beforeWorkingHour);
+            ttlAfterWorkingHr = ttlAfterWorkingHr + Convert.ToInt32(afterWorkingHour);
+            ttlWorkingHr = ttlWorkingHr + Convert.ToInt32(workingHour);
+
+            ttlBDBeforeWorkingHr = ttlBDBeforeWorkingHr + Convert.ToInt32(beforeWorkingHour);
+            ttlBDAfterWorkingHr = ttlBDAfterWorkingHr + Convert.ToInt32(afterWorkingHour);
+            ttlBDWorkingHr = ttlBDWorkingHr + Convert.ToInt32(workingHour);
+
+            bodyCell = new PdfPCell(new Phrase(beforeWorkingHour, bodyDetails));
+            bodyCell.Colspan = 1; bodyCell.HorizontalAlignment = 1;
+            body.AddCell(bodyCell);
+
+            bodyCell = new PdfPCell(new Phrase(workingHour.ToString(), bodyDetails));
+            bodyCell.Colspan = 1; bodyCell.HorizontalAlignment = 1;
+            body.AddCell(bodyCell);
+
+            bodyCell = new PdfPCell(new Phrase(afterWorkingHour.ToString(), bodyDetails));
+            bodyCell.Colspan = 1; bodyCell.HorizontalAlignment = 1;
+            body.AddCell(bodyCell);
+
+            bodyCell = new PdfPCell(new Phrase(r.approval_status.ToString(), bodyDetails));
+            bodyCell.Colspan = 1; bodyCell.HorizontalAlignment = 1;
+            body.AddCell(bodyCell);
+        }
+    }
+
+    bodyCell = new PdfPCell(new Phrase(""));
+    bodyCell.Colspan = 10;
+    body.AddCell(bodyCell);
+
+    bodyCell = new PdfPCell(new Phrase("Total", bodyDetails));
+    bodyCell.Colspan = 1;
+    body.AddCell(bodyCell);
+
+    bodyCell = new PdfPCell(new Phrase((ttlBDBeforeWorkingHr + ttlBDWorkingHr + ttlBDAfterWorkingHr).ToString(), bodyDetails));
+    bodyCell.Colspan = 1; bodyCell.HorizontalAlignment = 1;
+    body.AddCell(bodyCell);
+
+    bodyCell = new PdfPCell(new Phrase(ttlBDBeforeWorkingHr.ToString(), bodyDetails));
+    bodyCell.Colspan = 1; bodyCell.HorizontalAlignment = 1;
+    body.AddCell(bodyCell);
+
+    bodyCell = new PdfPCell(new Phrase(ttlBDWorkingHr.ToString(), bodyDetails));
+    bodyCell.Colspan = 1; bodyCell.HorizontalAlignment = 1;
+    body.AddCell(bodyCell);
+
+    bodyCell = new PdfPCell(new Phrase(ttlBDAfterWorkingHr.ToString(), bodyDetails));
+    bodyCell.Colspan = 1; bodyCell.HorizontalAlignment = 1;
+    body.AddCell(bodyCell);
+
+    space = new PdfPCell(new Phrase(""));
+    space.Colspan = 1;
+    body.AddCell(space);
+
+    space = new PdfPCell(new Phrase("\r\n\r\n"));
+    space.Colspan = 17; space.Rowspan = 2; space.Border = Rectangle.NO_BORDER;
+    body.AddCell(space);
+
+    //PART C
+    //***********************************************************************************************************************************
+    bodyCell = new PdfPCell(new Phrase("C. None Bussiness Day ( Public Holiday)", labelFont));
+    bodyCell.Colspan = 17; bodyCell.HorizontalAlignment = 0; bodyCell.VerticalAlignment = Element.ALIGN_BOTTOM; bodyCell.Border = Rectangle.NO_BORDER;
+    body.AddCell(bodyCell);
+
+    for (int i = 0; i < bodyHeaderList.Count; i++)
+    {
+        body.AddCell(bodyHeaderList[i]);
+    }
+
+    ttlWorkingHr = 0; ttlAfterWorkingHr = 0; ttlBeforeWorkingHr = 0; counter = 0;
+    foreach (var r in result)
+    {
+        if (r.working_date_type == "NBD")
+        {
+            counter++;
+            bodyCell = new PdfPCell(new Phrase(counter.ToString(), bodyDetails));
+            bodyCell.Colspan = 1; bodyCell.HorizontalAlignment = 1;
+            body.AddCell(bodyCell);
+
+            bodyCell = new PdfPCell(new Phrase(r.ticket_id, bodyDetails));
+            bodyCell.Colspan = 2; bodyCell.HorizontalAlignment = 1;
+            body.AddCell(bodyCell);
+
+            bodyCell = new PdfPCell(new Phrase(r.employee_name, bodyDetails));
+            bodyCell.Colspan = 3; bodyCell.HorizontalAlignment = 1;
+            body.AddCell(bodyCell);
+
+            bodyCell = new PdfPCell(new Phrase(r.working_date.ToString("dddd"), bodyDetails));
+            bodyCell.Colspan = 1; bodyCell.HorizontalAlignment = 1;
+            body.AddCell(bodyCell);
+
+            bodyCell = new PdfPCell(new Phrase(r.working_date_type, bodyDetails));
+            bodyCell.Colspan = 1; bodyCell.HorizontalAlignment = 1;
+            body.AddCell(bodyCell);
+
+            bodyCell = new PdfPCell(new Phrase(r.working_date.ToString("dd/MM/yyyy"), bodyDetails));
+            bodyCell.Colspan = 1; bodyCell.HorizontalAlignment = 1;
+            body.AddCell(bodyCell);
+
+            bodyCell = new PdfPCell(new Phrase(r.time_in.ToString("HH:mm"), bodyDetails));
+            bodyCell.Colspan = 1; bodyCell.HorizontalAlignment = 1;
+            body.AddCell(bodyCell);
+
+            bodyCell = new PdfPCell(new Phrase(r.time_out.ToString("HH:mm"), bodyDetails));
+            bodyCell.Colspan = 1; bodyCell.HorizontalAlignment = 1;
+            body.AddCell(bodyCell);
+
+            bodyCell = new PdfPCell(new Phrase(r.total_working_hour.ToString(), bodyDetails));
+            bodyCell.Colspan = 1; bodyCell.HorizontalAlignment = 1;
+            body.AddCell(bodyCell);
+
+            dynamic beforeWorkingHour = (TimeSpan.Parse("09:00") - TimeSpan.Parse(r.time_in.ToString("HH:mm"))).Hours;
+            beforeWorkingHour = Convert.ToInt32(beforeWorkingHour.ToString()) < 0 ? "0" : beforeWorkingHour.ToString();
+            dynamic afterWorkingHour = (TimeSpan.Parse(r.time_out.ToString("HH:mm")) - TimeSpan.Parse("17:00")).Hours;
+            afterWorkingHour = Convert.ToInt32(afterWorkingHour.ToString()) < 0 ? "0" : afterWorkingHour.ToString();
+            dynamic workingHour = Convert.ToInt32(r.total_working_hour) - Convert.ToInt32(beforeWorkingHour) - Convert.ToInt32(afterWorkingHour);
+            workingHour = workingHour < 0 ? "0" : workingHour.ToString();
+
+
+
+            ttlBeforeWorkingHr = ttlBeforeWorkingHr + Convert.ToInt32(beforeWorkingHour);
+            ttlAfterWorkingHr = ttlAfterWorkingHr + Convert.ToInt32(afterWorkingHour);
+            ttlWorkingHr = ttlWorkingHr + Convert.ToInt32(workingHour);
+
+
+            ttlNBDBeforeWorkingHr = ttlNBDBeforeWorkingHr + Convert.ToInt32(beforeWorkingHour);
+            ttlNBDAfterWorkingHr = ttlNBDAfterWorkingHr + Convert.ToInt32(afterWorkingHour);
+            ttlNBDWorkingHr = ttlNBDWorkingHr + Convert.ToInt32(workingHour);
+
+
+            bodyCell = new PdfPCell(new Phrase(beforeWorkingHour, bodyDetails));
+            bodyCell.Colspan = 1; bodyCell.HorizontalAlignment = 1;
+            body.AddCell(bodyCell);
+
+            bodyCell = new PdfPCell(new Phrase(workingHour.ToString(), bodyDetails));
+            bodyCell.Colspan = 1; bodyCell.HorizontalAlignment = 1;
+            body.AddCell(bodyCell);
+
+            bodyCell = new PdfPCell(new Phrase(afterWorkingHour.ToString(), bodyDetails));
+            bodyCell.Colspan = 1; bodyCell.HorizontalAlignment = 1;
+            body.AddCell(bodyCell);
+
+            bodyCell = new PdfPCell(new Phrase(r.approval_status.ToString(), bodyDetails));
+            bodyCell.Colspan = 1; bodyCell.HorizontalAlignment = 1;
+            body.AddCell(bodyCell);
+        }
+    }
+    bodyCell = new PdfPCell(new Phrase(""));
+    bodyCell.Colspan = 10;
+    body.AddCell(bodyCell);
+
+    bodyCell = new PdfPCell(new Phrase("Total", bodyDetails));
+    bodyCell.Colspan = 1;
+    body.AddCell(bodyCell);
+
+    bodyCell = new PdfPCell(new Phrase((ttlNBDBeforeWorkingHr + ttlNBDWorkingHr + ttlNBDAfterWorkingHr).ToString(), bodyDetails));
+    bodyCell.Colspan = 1; bodyCell.HorizontalAlignment = 1;
+    body.AddCell(bodyCell);
+
+    bodyCell = new PdfPCell(new Phrase(ttlNBDBeforeWorkingHr.ToString(), bodyDetails));
+    bodyCell.Colspan = 1; bodyCell.HorizontalAlignment = 1;
+    body.AddCell(bodyCell);
+
+    bodyCell = new PdfPCell(new Phrase(ttlNBDWorkingHr.ToString(), bodyDetails));
+    bodyCell.Colspan = 1; bodyCell.HorizontalAlignment = 1;
+    body.AddCell(bodyCell);
+
+    bodyCell = new PdfPCell(new Phrase(ttlNBDAfterWorkingHr.ToString(), bodyDetails));
+    bodyCell.Colspan = 1; bodyCell.HorizontalAlignment = 1;
+    body.AddCell(bodyCell);
+
+    space = new PdfPCell(new Phrase(""));
+    space.Colspan = 1;
+    body.AddCell(space);
+
+    //PART D
+    //***********************************************************************************************************************************8
+    space = new PdfPCell(new Phrase("\r\n\r\n"));
+    space.Colspan = 10; space.Rowspan = 2; space.Border = Rectangle.NO_BORDER;
+    footer.AddCell(space);
+
+    PdfPCell footerCell = new PdfPCell(new Phrase("D. Overtime Summary", labelFont));
+    footerCell.Colspan = 10; footerCell.HorizontalAlignment = 0; footerCell.VerticalAlignment = Element.ALIGN_BOTTOM; footerCell.Border = Rectangle.NO_BORDER;
+    footer.AddCell(footerCell);
+
+    footerCell = new PdfPCell(new Phrase("Business Day (BD)", labelFont));
+    footerCell.Colspan = 5; footerCell.HorizontalAlignment = 0; footerCell.VerticalAlignment = Element.ALIGN_BOTTOM; footerCell.Border = footerCell.Border = Rectangle.LEFT_BORDER | Rectangle.TOP_BORDER | Rectangle.RIGHT_BORDER;
+    footer.AddCell(footerCell);
+
+    footerCell = new PdfPCell(new Phrase("None Business Day (NBD)", labelFont));
+    footerCell.Colspan = 5; footerCell.HorizontalAlignment = 0; footerCell.Border = Rectangle.LEFT_BORDER | Rectangle.TOP_BORDER | Rectangle.RIGHT_BORDER;
+    footer.AddCell(footerCell);
+
+    footerCell = new PdfPCell(new Phrase("Total Midnight Overtime (0000-0900hrs)", footerDetails));
+    footerCell.Colspan = 3; footerCell.HorizontalAlignment = 0; footerCell.Border = Rectangle.LEFT_BORDER;
+    footer.AddCell(footerCell);
+
+    footerCell = new PdfPCell(new Phrase(ttlBDBeforeWorkingHr.ToString(), footerDetails));
+    footerCell.Colspan = 2; footerCell.HorizontalAlignment = 1; footerCell.Border = Rectangle.RIGHT_BORDER;
+    footer.AddCell(footerCell);
+
+    footerCell = new PdfPCell(new Phrase("Total Midnight Overtime (0000-0900hrs)", footerDetails));
+    footerCell.Colspan = 3; footerCell.HorizontalAlignment = 0; footerCell.Border = Rectangle.LEFT_BORDER;
+    footer.AddCell(footerCell);
+
+    footerCell = new PdfPCell(new Phrase(ttlNBDBeforeWorkingHr.ToString(), footerDetails));
+    footerCell.Colspan = 2; footerCell.HorizontalAlignment = 1; footerCell.Border = Rectangle.RIGHT_BORDER;
+    footer.AddCell(footerCell);
+
+    footerCell = new PdfPCell(new Phrase("Total Normal Hour (0900-1700hrs)", footerDetails));
+    footerCell.Colspan = 3; footerCell.HorizontalAlignment = 0; footerCell.Border = Rectangle.LEFT_BORDER;
+    footer.AddCell(footerCell);
+
+    footerCell = new PdfPCell(new Phrase(ttlBDWorkingHr.ToString(), footerDetails));
+    footerCell.Colspan = 2; footerCell.HorizontalAlignment = 1; footerCell.Border = Rectangle.RIGHT_BORDER;
+    footer.AddCell(footerCell);
+
+    footerCell = new PdfPCell(new Phrase("Total Normal Hour (0900-1700hrs)", footerDetails));
+    footerCell.Colspan = 3; footerCell.HorizontalAlignment = 0; footerCell.Border = Rectangle.LEFT_BORDER;
+    footer.AddCell(footerCell);
+
+    footerCell = new PdfPCell(new Phrase(ttlNBDWorkingHr.ToString(), footerDetails));
+    footerCell.Colspan = 2; footerCell.HorizontalAlignment = 1; footerCell.Border = Rectangle.RIGHT_BORDER;
+    footer.AddCell(footerCell);
+
+    footerCell = new PdfPCell(new Phrase("Total Overtime (1700-2359hrs)", footerDetails));
+    footerCell.Colspan = 3; footerCell.HorizontalAlignment = 0; footerCell.Border = Rectangle.LEFT_BORDER | Rectangle.BOTTOM_BORDER;
+    footer.AddCell(footerCell);
+
+    footerCell = new PdfPCell(new Phrase(ttlBDAfterWorkingHr.ToString(), footerDetails));
+    footerCell.Colspan = 2; footerCell.HorizontalAlignment = 1; footerCell.Border = Rectangle.RIGHT_BORDER | Rectangle.BOTTOM_BORDER;
+    footer.AddCell(footerCell);
+
+    footerCell = new PdfPCell(new Phrase("Total Overtime (1700-2359hrs)", footerDetails));
+    footerCell.Colspan = 3; footerCell.HorizontalAlignment = 0; footerCell.Border = Rectangle.LEFT_BORDER | Rectangle.BOTTOM_BORDER;
+    footer.AddCell(footerCell);
+
+    footerCell = new PdfPCell(new Phrase(ttlNBDAfterWorkingHr.ToString(), footerDetails));
+    footerCell.Colspan = 2; footerCell.HorizontalAlignment = 1; footerCell.Border = Rectangle.RIGHT_BORDER | Rectangle.BOTTOM_BORDER;
+    footer.AddCell(footerCell);
+
+
+
+
+    document.Add(header);
+    document.Add(body);
+    document.Add(footer);
+    document.Close();
+    writer.Close();
+
+
+    Response.ContentType = "pdf/application";
+    Response.AddHeader("content-disposition",
+    "attachment;filename=" + Model.company_name+"_"+ ViewBag.dateOfReport + ".pdf");
+
+    Response.Write("GENERATED!");
+}

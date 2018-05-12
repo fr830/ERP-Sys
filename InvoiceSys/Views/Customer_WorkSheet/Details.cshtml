@@ -1,0 +1,199 @@
+﻿@model MrAng_Invoice.Models.Customer_WorkSheet
+
+@{
+    ViewBag.Title = "Details";
+
+    if (String.IsNullOrEmpty(ViewBag.layout))
+    {
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+    else
+    {
+        Layout = "~/Views/Shared/PopUpLayout.cshtml";
+    }
+
+}
+
+<h2>Details</h2>
+
+<div>
+    <h4>@Model.ticket_id Information</h4>
+    @if (String.IsNullOrEmpty(ViewBag.layout))
+    {
+    <a onclick="compareEmployeeVer()">Compare Employee Version</a>
+    }
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.ticket_id)
+        </dt>
+
+        <dd id="ticket_id">
+            @Html.DisplayFor(model => model.ticket_id)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.employee_ID)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.employee_ID)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.employee_name)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.employee_name)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.employee_worksheet_ID)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.employee_worksheet_ID)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.working_date)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.working_date)
+        </dd>
+        <dt>
+            Day:
+        </dt>
+
+        <dd>
+            @Model.working_date.DayOfWeek
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.working_date_type)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.working_date_type)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.time_in)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.time_in)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.time_out)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.time_out)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.total_working_hour)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.total_working_hour)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.client_served)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.client_served)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.submission_date)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.submission_date)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.approval_date)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.approval_date)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.approval_status)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.approval_status)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.job_location)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.job_location)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.job_description)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.job_description)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.followup_by)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.followup_by)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.requested_by)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.requested_by)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.remarks)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.remarks)
+        </dd>
+
+    </dl>
+</div>
+<p>
+    <!--Html.ActionLink("Edit", "Edit", new { id = Model.customer_worksheet_ID }) |-->
+@if (String.IsNullOrEmpty(ViewBag.layout))
+{
+    @Html.ActionLink("Back to List", "Index")
+}
+else
+{
+    <a onclick="goBack()">Back to List</a>
+}
+</p>
+<script>
+    function compareEmployeeVer() {
+        var ticket_id = document.getElementById('ticket_id').innerText;
+        var popup = window.open('/Customer_Worksheet/CompareEmployeeVersion?ticket_id=' + ticket_id, '_blank', 'toolbar=0,location=0,menubar=0,scrollbars=1,resizable=1');
+        popup.focus();
+    }
+    function goBack() {
+        window.location.href = "/Quotation_Details/TaskListSearch_PopUp";
+    }
+</script>

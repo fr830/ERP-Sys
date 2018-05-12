@@ -1,0 +1,47 @@
+﻿
+@{
+    Layout = null;
+
+        dynamic session_username = Session["username"];
+        dynamic session_name = Session["name"];
+        dynamic role = Session["role"];
+        dynamic permission = Session["permission"];
+        session_username = session_username == null ? "" : session_username;
+        session_name = session_name == null ? "" : session_name;
+        role = role == null ? "" : role;
+        permission = permission == null ? "" : permission;
+
+        if (session_username == "" || session_username == null)
+        {
+            Response.Write("<script>window.location.assign('/Login/Index')</script>");
+        }
+        if (session_name == "" || session_name == null)
+        {
+            Response.Write("<script>window.location.assign('/Login/Index')</script>");
+        }
+        if (role == "" || role == null)
+        {
+            Response.Write("<script>window.location.assign('/Login/Index')</script>");
+        }
+        if (permission == "" || permission == null)
+        {
+            Response.Write("<script>window.location.assign('/Login/Index')</script>");
+        }
+    
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            background-image: url("/Images/Error.png");
+            background-size: 100%;
+            background-repeat: no-repeat;
+        }
+    </style>
+</head>
+<body>
+
+</body>
+</html>
